@@ -1,275 +1,251 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Feliz cumple Yareni 🎉</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: black;
+let frases = ["Feliz cumple", "Yareni :D", "Que todos tus deseos...", "¡se hagan realidad!", "Te lo mereces :)"];
+let lluvia = [];
+let particulas = [];
+let explosiones = [];
+let cantidadParticulas = 100;
+
+let clics = 0;
+let modoDedicatoria = false;
+let modoBorrado = false;
+let modoExplosiones = false;
+let modoMensajeFinal = false;
+let modoOscurecer = false;
+
+let dedicatoria = [
+  "No sabía cómo empezar esto...",
+  "Quería hacer algo especial...",
+  "Tal vez esto sea raro...",
+  "Pero viene con cariño :)"
+];
+let textoActual = "";
+let indexFrase = 0;
+let indexLetra = 0;
+let tiempoInicioDedicatoria;
+let tiempoInicioBorrado;
+let tiempoInicioFinal;
+
+let mensajeFinal = "Ya no hay más sorpresas niña jajaja ... Que tengas un excelente cumple ... Mis mejores deseos :)";
+let mensajeFinalActual = "";
+let indexMensajeFinal = 0;
+let opacidadPantalla = 0;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textFont("Arial");
+  textAlign(CENTER, CENTER);
+  for (let i = 0; i < cantidadParticulas; i++) {
+    particulas.push(new Particula());
+  }
+}
+
+function draw() {
+  background(0);
+  
+  // Partículas de fondo
+  for (let p of particulas) {
+    p.update();
+    p.display();
+  }
+
+  if (!modoDedicatoria) {
+    // Lluvia de frases
+    for (let l of lluvia) {
+      l.update();
+      l.display();
     }
-    canvas {
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <script>
-    let texts = [];
-    let particles = [];
-    let brillos = [];
-    let colors = ['#FF0000', '#FF66B2', '#FFFFFF'];
-    let explosionSound;
-    let isMobile;
-    let lastTouchTime = 0;
-    let showReminder = false;
-    let clickCount = 0;
-    let maxClicks = 40;
-    let modoDedicatoria = false;
+  }
 
-    let dedicatoria = [
-      "Hola Yareni ;) ... Que tal, espero que est\u00e9s bien ...",
-      "Hace unos meses que no nos vemos pero en fin,",
-      "s\u00e9 que no nos conocemos muy bien que digamos y solo hablamos un par de veces",
-      "pero en ese poco tiempo me agradaste bastante de verdad ...",
-      "Y bueno jajaja ... Espero te haya gustado el c\u00f3digo que te hice :) ...",
-      "Se te quiere",
-      "Se te extra\u00f1a",
-      "Jajaja ... Bueno la verdad s\u00ed se te extra\u00f1a,",
-      "ojal\u00e1 tener la oportunidad de conocernos m\u00e1s muy pronto ...",
-      "Atte Caleb ...",
-      "Por cierto hace mucho que no escrib\u00eda una carta"
-    ];
+  // Explosiones
+  for (let e of explosiones) {
+    e.update();
+    e.display();
+  }
+  explosiones = explosiones.filter(e => !e.terminado());
 
-    let typingIndex = 0;
-    let lineIndex = 0;
-    let currentLine = "";
-    let typingDelay = 10;
-    let frameCounter = 0;
-    let borrando = false;
-    let brilloCount = 40;
-
-    function preload() {
-      explosionSound = loadSound('explosion.mp3');
-    }
-
-    function setup() {
-      isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      createCanvas(windowWidth, windowHeight);
-      frameRate(60);
-      textFont('Arial');
-      textSize(32);
-      textAlign(CENTER, CENTER);
-
-      let totalTexts = isMobile ? 40 : 60;
-      for (let i = 0; i < totalTexts; i++) {
-        texts.push(new FallingText(i, totalTexts));
-      }
-      for (let i = 0; i < brilloCount; i++) {
-        brillos.push(new Brillo());
-      }
-      lastTouchTime = millis();
-    }
-
-    function draw() {
-      background(0);
-
-      if (modoDedicatoria) {
-        for (let b of brillos) {
-          b.update();
-          b.show();
+  // Texto dedicatoria
+  if (modoDedicatoria && !modoBorrado && !modoMensajeFinal) {
+    fill(255);
+    textSize(28);
+    text(textoActual, width / 2, height / 2);
+    
+    if (millis() - tiempoInicioDedicatoria > 100 && indexFrase < dedicatoria.length) {
+      if (indexLetra < dedicatoria[indexFrase].length) {
+        textoActual += dedicatoria[indexFrase][indexLetra];
+        indexLetra++;
+        tiempoInicioDedicatoria = millis();
+      } else {
+        if (textoActual !== dedicatoria[indexFrase]) {
+          textoActual = dedicatoria[indexFrase];
         }
-        drawDedicatoria();
-        return;
-      }
-
-      let currentTime = millis();
-      showReminder = currentTime - lastTouchTime > 5000;
-
-      for (let t of texts) {
-        t.update();
-        t.show();
-      }
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].update();
-        particles[i].show();
-        if (particles[i].life <= 0) {
-          particles.splice(i, 1);
-        }
-      }
-
-      fill(255);
-      textSize(20);
-      text(`Taps: ${clickCount} / ${maxClicks}`, width - 100, 30);
-
-      if (showReminder) {
-        textSize(28);
-        textAlign(CENTER, CENTER);
-        textLeading(36);
-        text("Toca la pantalla\nquerida cumplea\u00f1era ;)\n\n", width / 2, height / 2);
-        textSize(32);
-      }
-    }
-
-    function mousePressed() {
-      if (modoDedicatoria) return;
-      lastTouchTime = millis();
-      explosionSound.play();
-      clickCount++;
-
-      if (clickCount >= maxClicks) {
-        modoDedicatoria = true;
-        texts = []; // detener frases
-        return;
-      }
-
-      let particleCount = isMobile ? 25 : 40;
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle(mouseX, mouseY));
-      }
-
-      for (let t of texts) {
-        let d = dist(mouseX, mouseY, t.x, t.y);
-        if (d < 100) {
-          t.startDelay();
-        }
-      }
-    }
-
-    function drawDedicatoria() {
-      fill(255);
-      textAlign(CENTER, CENTER);
-      textSize(26);
-      frameCounter++;
-
-      if (frameCounter % typingDelay === 0) {
-        if (!borrando && typingIndex <= dedicatoria[lineIndex].length) {
-          currentLine = dedicatoria[lineIndex].substring(0, typingIndex);
-          typingIndex++;
-        } else if (borrando && typingIndex >= 0) {
-          currentLine = dedicatoria[lineIndex].substring(0, typingIndex);
-          typingIndex--;
-        } else {
-          if (dedicatoria[lineIndex] === "Se te quiere" || dedicatoria[lineIndex] === "Se te extra\u00f1a" || dedicatoria[lineIndex] === "Por cierto hace mucho que no escrib\u00eda una carta") {
-            borrando = !borrando;
-            if (!borrando) {
-              lineIndex++;
-              typingIndex = 0;
-            }
+        if (millis() - tiempoInicioDedicatoria > 1500) {
+          indexFrase++;
+          indexLetra = 0;
+          if (indexFrase < dedicatoria.length) {
+            textoActual += "\n"; // mantener texto acumulado
           } else {
-            lineIndex++;
-            typingIndex = 0;
+            tiempoInicioBorrado = millis();
+            modoBorrado = true;
           }
         }
       }
+    }
+  }
 
-      if (lineIndex < dedicatoria.length) {
-        let fullText = "";
-for (let i = 0; i < lineIndex; i++) {
-  fullText += dedicatoria[i] + "\\n";
+  // Borrado lento
+  if (modoBorrado && !modoMensajeFinal) {
+    fill(255);
+    textSize(28);
+    text(textoActual, width / 2, height / 2);
+
+    if (millis() - tiempoInicioBorrado > 15000) {
+      if (textoActual.length > 0 && frameCount % 3 === 0) {
+        textoActual = textoActual.substring(1);
+      } else if (textoActual.length === 0) {
+        modoExplosiones = true;
+        tiempoInicioFinal = millis();
+      }
+    }
+  }
+
+  // Explosiones y aumento de partículas
+  if (modoExplosiones) {
+    if (frameCount % 10 === 0 && random() < 0.3) {
+      explosiones.push(new Explosion(random(width), random(height)));
+    }
+
+    if (particulas.length < 200) {
+      particulas.push(new Particula());
+    }
+
+    if (millis() - tiempoInicioFinal > 15000) {
+      modoExplosiones = false;
+      modoMensajeFinal = true;
+    }
+  }
+
+  // Mensaje final
+  if (modoMensajeFinal) {
+    fill(255);
+    textSize(24);
+    text(mensajeFinalActual, width / 2, height / 2 + 150);
+    
+    if (frameCount % 3 === 0 && indexMensajeFinal < mensajeFinal.length) {
+      mensajeFinalActual += mensajeFinal[indexMensajeFinal];
+      indexMensajeFinal++;
+    } else if (indexMensajeFinal >= mensajeFinal.length) {
+      modoOscurecer = true;
+    }
+  }
+
+  // Oscurecimiento
+  if (modoOscurecer) {
+    if (opacidadPantalla < 255) {
+      opacidadPantalla += 1;
+    }
+    fill(0, opacidadPantalla);
+    rect(0, 0, width, height);
+  }
 }
-fullText += currentLine;
-text(fullText, width / 2, height / 2);
-      }
+
+function mousePressed() {
+  if (!modoDedicatoria) {
+    clics++;
+    lluvia.push(new Letra(random(frases)));
+
+    explosiones.push(new Explosion(mouseX, mouseY));
+
+    if (clics >= 40) {
+      modoDedicatoria = true;
+      textoActual = "";
+      indexFrase = 0;
+      indexLetra = 0;
+      tiempoInicioDedicatoria = millis();
+      lluvia = []; // detener lluvia
     }
+  }
+}
 
-    class FallingText {
-      constructor(i, total) {
-        this.index = i;
-        this.total = total;
-        this.reset(true);
-        this.waiting = false;
-      }
+class Letra {
+  constructor(txt) {
+    this.txt = txt;
+    this.x = random(width);
+    this.y = random(-100, -20);
+    this.speed = random(1, 3);
+    this.alpha = 255;
+    this.color = color(180, 100, 255); // Violeta
+  }
 
-      reset(firstTime = false) {
-        this.x = random(width);
-        this.y = firstTime ? map(this.index, 0, this.total, -height * 2, -50) : random(-300, -50);
-        this.speed = random(isMobile ? 5 : 3, isMobile ? 10 : 7);
-        this.color = random(colors);
-        this.waiting = false;
-      }
-
-      startDelay() {
-        this.waiting = true;
-        this.timer = millis();
-        this.delay = random(300, 900);
-      }
-
-      update() {
-        this.y += this.speed;
-        if (this.y > height + 50 && !this.waiting) {
-          this.startDelay();
-        }
-        if (this.waiting && millis() - this.timer >= this.delay) {
-          this.reset();
-        }
-      }
-
-      show() {
-        fill(this.color);
-        text("Feliz cumple", this.x, this.y);
-        text("Yareni :D", this.x, this.y + 35);
-      }
+  update() {
+    this.y += this.speed;
+    if (this.y > height) {
+      this.y = random(-100, -20);
+      this.x = random(width);
     }
+  }
 
-    class Particle {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        let angle = random(TWO_PI);
-        let speed = random(2, 6);
-        this.vx = cos(angle) * speed;
-        this.vy = sin(angle) * speed;
-        this.life = 50;
-        this.color = random(colors);
-      }
+  display() {
+    fill(this.color);
+    textSize(24);
+    text(this.txt, this.x, this.y);
+  }
+}
 
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += 0.2;
-        this.life--;
-      }
+class Particula {
+  constructor() {
+    this.x = random(width);
+    this.y = random(height);
+    this.size = random(1, 3);
+    this.speed = random(0.2, 0.7);
+  }
 
-      show() {
-        noStroke();
-        fill(this.color);
-        ellipse(this.x, this.y, 5);
-      }
+  update() {
+    this.y += this.speed;
+    if (this.y > height) {
+      this.y = 0;
+      this.x = random(width);
     }
+  }
 
-    class Brillo {
-      constructor() {
-        this.reset();
-      }
+  display() {
+    fill(150, 100);
+    noStroke();
+    ellipse(this.x, this.y, this.size);
+  }
+}
 
-      reset() {
-        this.x = random(width);
-        this.y = random(height);
-        this.size = random(2, 5);
-        this.speed = random(0.2, 0.5);
-        this.color = random(colors);
-        this.alpha = random(50, 150);
-      }
-
-      update() {
-        this.y -= this.speed;
-        if (this.y < 0) {
-          this.reset();
-          this.y = height;
-        }
-      }
-
-      show() {
-        noStroke();
-        fill(color(this.color + hex(this.alpha, 2)));
-        ellipse(this.x, this.y, this.size);
-      }
+class Explosion {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.particles = [];
+    for (let i = 0; i < 20; i++) {
+      this.particles.push({
+        x: this.x,
+        y: this.y,
+        vx: random(-3, 3),
+        vy: random(-3, 3),
+        alpha: 255
+      });
     }
-  </script>
-</body>
-</html>
+  }
+
+  update() {
+    for (let p of this.particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 4;
+    }
+  }
+
+  display() {
+    noStroke();
+    for (let p of this.particles) {
+      fill(255, p.alpha);
+      ellipse(p.x, p.y, 5);
+    }
+  }
+
+  terminado() {
+    return this.particles.every(p => p.alpha <= 0);
+  }
+}
