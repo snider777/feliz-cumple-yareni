@@ -23,6 +23,8 @@
     let colors = ['#FF0000', '#FF00FF', '#FF66B2'];
     let explosionSound;
     let isMobile;
+    let lastTouchTime = 0;
+    let showReminder = false;
 
     function preload() {
       explosionSound = loadSound('explosion.mp3');
@@ -36,26 +38,23 @@
       textSize(32);
       textAlign(CENTER, CENTER);
 
-      // Aumentamos la cantidad de frases
-      let totalTexts = isMobile ? 30 : 50;
+      let totalTexts = isMobile ? 40 : 60;
       for (let i = 0; i < totalTexts; i++) {
         texts.push(new FallingText(i, totalTexts));
       }
+
+      lastTouchTime = millis();
     }
 
     function draw() {
       background(0);
       let currentTime = millis();
 
+      // Mostrar mensaje de inactividad si pasaron 5 segundos
+      showReminder = currentTime - lastTouchTime > 5000;
+
       for (let t of texts) {
-        if (t.waiting) {
-          if (currentTime - t.timer >= t.delay) {
-            t.reset();
-            t.waiting = false;
-          }
-        } else {
-          t.update();
-        }
+        t.update();
         t.show();
       }
 
@@ -66,9 +65,17 @@
           particles.splice(i, 1);
         }
       }
+
+      if (showReminder) {
+        fill(255);
+        textSize(28);
+        text("   Toca la pantalla\nquerida cumpleañera ;)", width / 2, height / 2);
+        textSize(32); // restaurar
+      }
     }
 
     function mousePressed() {
+      lastTouchTime = millis(); // reiniciar temporizador
       explosionSound.play();
       let particleCount = isMobile ? 25 : 40;
       for (let i = 0; i < particleCount; i++) {
@@ -78,7 +85,7 @@
       for (let t of texts) {
         let d = dist(mouseX, mouseY, t.x, t.y);
         if (d < 100) {
-          t.startDelay();  // Inicia el retardo antes de reaparecer
+          t.startDelay();  // solo retrasa la regeneración
         }
       }
     }
@@ -87,7 +94,7 @@
       constructor(i, total) {
         this.index = i;
         this.total = total;
-        this.reset(true);  // true para inicializar con separación vertical
+        this.reset(true);
         this.waiting = false;
       }
 
@@ -95,28 +102,34 @@
         this.x = random(width);
         this.y = firstTime
           ? map(this.index, 0, this.total, -height * 2, -50)
-          : random(-200, -50);
-        this.speed = random(isMobile ? 4 : 2, isMobile ? 7 : 5);
+          : random(-300, -50);
+        this.speed = random(isMobile ? 5 : 3, isMobile ? 10 : 7); // más rápido
         this.color = random(colors);
+        this.waiting = false;
       }
 
       startDelay() {
         this.waiting = true;
         this.timer = millis();
-        this.delay = random(300, 900); // entre 0.3s y 0.9s
+        this.delay = random(300, 900); // 0.3 a 0.9 s
       }
 
       update() {
         this.y += this.speed;
-        if (this.y > height + 50) {
+
+        if (this.y > height + 50 && !this.waiting) {
           this.startDelay();
+        }
+
+        if (this.waiting && millis() - this.timer >= this.delay) {
+          this.reset();
         }
       }
 
       show() {
         fill(this.color);
         text("Feliz cumple", this.x, this.y);
-        text("Yareni :D", this.x, this.y + 35); // segunda línea un poco más abajo
+        text("Yareni :D", this.x, this.y + 35);
       }
     }
 
