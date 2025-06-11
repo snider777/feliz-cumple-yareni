@@ -1,4 +1,9 @@
-let frases = ["Feliz cumple", "Yareni :D", "Que todos tus deseos...", "¡se hagan realidad!", "Te lo mereces :)"];
+// FRASES DE LLUVIA (originales, sin añadidos)
+let frases = [
+  "Feliz cumple",
+  "Yareni :D"
+];
+
 let lluvia = [];
 let particulas = [];
 let explosiones = [];
@@ -12,22 +17,23 @@ let modoMensajeFinal = false;
 let modoOscurecer = false;
 
 let dedicatoria = [
-  "No sabía cómo empezar esto...",
-  "Quería hacer algo especial...",
-  "Tal vez esto sea raro...",
-  "Pero viene con cariño :)"
+  { texto: "Hola Yareni ;) ... Que tal, espero que est\u00e9s bien ... Hace unos meses que no nos vemos pero en fin, s\u00e9 que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el c\u00f3digo que te hice :) ... ", borrar: false },
+  { texto: "Se te quiere", borrar: true },
+  { texto: "Se te extra\u00f1a", borrar: true },
+  { texto: "Jajaja  ... Bueno la verdad s\u00ed se te extra\u00f1a, ojal\u00e1 tener la oportunidad de conocernos m\u00e1s muy pronto ... Atte Caleb ... ", borrar: false },
+  { texto: "Por cierto hace mucho que no hac\u00eda una carta o algo de ese estilo ...", borrar: true }
 ];
+
 let textoActual = "";
 let indexFrase = 0;
 let indexLetra = 0;
-let tiempoInicioDedicatoria;
-let tiempoInicioBorrado;
+let borrando = false;
+let tiempoLetra = 0;
 let tiempoInicioFinal;
 
-let mensajeFinal = "Ya no hay más sorpresas niña jajaja ... Que tengas un excelente cumple ... Mis mejores deseos :)";
+let mensajeFinal = "Ya no hay m\u00e1s sorpresas ni\u00f1a jajaja ... Que tengas un excelente cumple ... Mis mejores deseos :)";
 let mensajeFinalActual = "";
 let indexMensajeFinal = 0;
-
 let opacidadPantalla = 0;
 
 function setup() {
@@ -42,13 +48,11 @@ function setup() {
 function draw() {
   background(0);
 
-  // Fondo de partículas
   for (let p of particulas) {
     p.update();
     p.display();
   }
 
-  // Lluvia de frases (antes de la dedicatoria)
   if (!modoDedicatoria) {
     for (let l of lluvia) {
       l.update();
@@ -56,56 +60,56 @@ function draw() {
     }
   }
 
-  // Explosiones
   for (let e of explosiones) {
     e.update();
     e.display();
   }
   explosiones = explosiones.filter(e => !e.terminado());
 
-  // Dedicatoria letra por letra
   if (modoDedicatoria && !modoBorrado && !modoMensajeFinal) {
     fill(255);
     textSize(28);
     text(textoActual, width / 2, height / 2);
 
-    if (millis() - tiempoInicioDedicatoria > 50) {
-      if (indexLetra < dedicatoria[indexFrase].length) {
-        textoActual += dedicatoria[indexFrase][indexLetra];
-        indexLetra++;
-        tiempoInicioDedicatoria = millis();
-      } else {
-        if (millis() - tiempoInicioDedicatoria > 1500) {
-          indexFrase++;
-          indexLetra = 0;
-          if (indexFrase < dedicatoria.length) {
-            textoActual += " ";
-            tiempoInicioDedicatoria = millis();
+    if (millis() - tiempoLetra > 50) {
+      let fraseObj = dedicatoria[indexFrase];
+      if (!borrando) {
+        if (indexLetra < fraseObj.texto.length) {
+          textoActual += fraseObj.texto[indexLetra];
+          indexLetra++;
+        } else {
+          if (fraseObj.borrar) {
+            borrando = true;
           } else {
-            modoBorrado = true;
-            tiempoInicioBorrado = millis();
+            indexFrase++;
+            indexLetra = 0;
           }
         }
+      } else {
+        if (textoActual.length > 0) {
+          textoActual = textoActual.substring(0, textoActual.length - 1);
+        } else {
+          borrando = false;
+          indexFrase++;
+          indexLetra = 0;
+        }
       }
+      tiempoLetra = millis();
+    }
+
+    if (indexFrase >= dedicatoria.length && !modoBorrado) {
+      modoBorrado = true;
+      tiempoInicioFinal = millis();
     }
   }
 
-  // Borrado de texto tras 15 segundos
   if (modoBorrado && !modoMensajeFinal) {
-    fill(255);
-    textSize(28);
-    text(textoActual, width / 2, height / 2);
-    if (millis() - tiempoInicioBorrado > 15000) {
-      if (textoActual.length > 0 && frameCount % 3 === 0) {
-        textoActual = textoActual.substring(1);
-      } else if (textoActual.length === 0) {
-        modoExplosiones = true;
-        tiempoInicioFinal = millis();
-      }
+    if (millis() - tiempoInicioFinal > 15000) {
+      modoExplosiones = true;
+      modoMensajeFinal = true;
     }
   }
 
-  // Explosiones y aumento de partículas
   if (modoExplosiones) {
     if (frameCount % 10 === 0 && random() < 0.4) {
       explosiones.push(new Explosion(random(width), random(height)));
@@ -114,19 +118,12 @@ function draw() {
     if (particulas.length < 200) {
       particulas.push(new Particula());
     }
-
-    if (millis() - tiempoInicioFinal > 15000) {
-      modoExplosiones = false;
-      modoMensajeFinal = true;
-    }
   }
 
-  // Mensaje final letra por letra
   if (modoMensajeFinal) {
     fill(255);
     textSize(24);
     text(mensajeFinalActual, width / 2, height / 2 + 150);
-
     if (frameCount % 3 === 0 && indexMensajeFinal < mensajeFinal.length) {
       mensajeFinalActual += mensajeFinal[indexMensajeFinal];
       indexMensajeFinal++;
@@ -135,7 +132,6 @@ function draw() {
     }
   }
 
-  // Oscurecimiento final
   if (modoOscurecer) {
     if (opacidadPantalla < 255) {
       opacidadPantalla += 1;
@@ -156,7 +152,7 @@ function mousePressed() {
       textoActual = "";
       indexFrase = 0;
       indexLetra = 0;
-      tiempoInicioDedicatoria = millis();
+      tiempoLetra = millis();
       lluvia = [];
     }
   }
@@ -168,9 +164,8 @@ class Letra {
     this.x = random(width);
     this.y = random(-100, -20);
     this.speed = random(1, 3);
-    this.color = color(180, 100, 255); // Violeta
+    this.color = color(180, 100, 255);
   }
-
   update() {
     this.y += this.speed;
     if (this.y > height) {
@@ -178,7 +173,6 @@ class Letra {
       this.x = random(width);
     }
   }
-
   display() {
     fill(this.color);
     textSize(24);
@@ -193,7 +187,6 @@ class Particula {
     this.size = random(1, 3);
     this.speed = random(0.2, 0.7);
   }
-
   update() {
     this.y += this.speed;
     if (this.y > height) {
@@ -201,7 +194,6 @@ class Particula {
       this.x = random(width);
     }
   }
-
   display() {
     fill(150, 100);
     noStroke();
@@ -224,7 +216,6 @@ class Explosion {
       });
     }
   }
-
   update() {
     for (let p of this.particles) {
       p.x += p.vx;
@@ -232,7 +223,6 @@ class Explosion {
       p.alpha -= 5;
     }
   }
-
   display() {
     noStroke();
     for (let p of this.particles) {
@@ -240,7 +230,6 @@ class Explosion {
       ellipse(p.x, p.y, 5);
     }
   }
-
   terminado() {
     return this.particles.every(p => p.alpha <= 0);
   }
