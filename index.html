@@ -34,15 +34,13 @@
       createCanvas(windowWidth, windowHeight);
       frameRate(60);
       textFont('Arial');
+      textSize(32); // 🔙 tamaño original
 
-      // Tamaño de texto adaptativo
-      textSize(isMobile ? 42 : 32);
       textAlign(CENTER, CENTER);
 
-      // Menos textos en móvil
       let totalTexts = isMobile ? 20 : 35;
       for (let i = 0; i < totalTexts; i++) {
-        texts.push(new FallingText());
+        texts.push(new FallingText(i, totalTexts));
       }
     }
 
@@ -78,14 +76,15 @@
     }
 
     class FallingText {
-      constructor() {
-        this.reset();
+      constructor(i, total) {
+        this.reset(i, total);
       }
 
-      reset() {
+      reset(i = 0, total = 30) {
         this.x = random(width);
-        this.y = random(-200, -50);
-        this.speed = random(isMobile ? 4 : 2, isMobile ? 8 : 5); // más rápida en móviles
+        // Espaciado más uniforme en Y usando índice
+        this.y = map(i, 0, total, -height, -50);
+        this.speed = random(isMobile ? 4 : 2, isMobile ? 8 : 5);
         this.color = random(colors);
       }
 
