@@ -49,8 +49,6 @@
     function draw() {
       background(0);
       let currentTime = millis();
-
-      // Mostrar mensaje de inactividad si pasaron 5 segundos
       showReminder = currentTime - lastTouchTime > 5000;
 
       for (let t of texts) {
@@ -67,10 +65,12 @@
       }
 
       if (showReminder) {
-        fill(255);
+        textAlign(CENTER, CENTER);
         textSize(28);
-        text("   Toca la pantalla\nquerida cumpleañera ;)", width / 2, height / 2);
-        textSize(32); // restaurar
+        textLeading(36); // Espaciado entre líneas
+        fill(255); // Color blanco
+        text("Toca la pantalla\nquerida cumpleañera ;)", width / 2, height / 2);
+        textSize(32); // Restaurar
       }
     }
 
@@ -85,7 +85,7 @@
       for (let t of texts) {
         let d = dist(mouseX, mouseY, t.x, t.y);
         if (d < 100) {
-          t.startDelay();  // solo retrasa la regeneración
+          t.startDelay(); // solo espera antes de regenerarse
         }
       }
     }
@@ -103,7 +103,7 @@
         this.y = firstTime
           ? map(this.index, 0, this.total, -height * 2, -50)
           : random(-300, -50);
-        this.speed = random(isMobile ? 5 : 3, isMobile ? 10 : 7); // más rápido
+        this.speed = random(isMobile ? 5 : 3, isMobile ? 10 : 7);
         this.color = random(colors);
         this.waiting = false;
       }
