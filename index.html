@@ -168,7 +168,12 @@
       }
 
       if (lineIndex < dedicatoria.length) {
-        text(currentLine, width / 2, height / 2);
+        let fullText = "";
+for (let i = 0; i < lineIndex; i++) {
+  fullText += dedicatoria[i] + "\\n";
+}
+fullText += currentLine;
+text(fullText, width / 2, height / 2);
       }
     }
 
