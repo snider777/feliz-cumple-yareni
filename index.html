@@ -20,11 +20,37 @@
   <script>
     let texts = [];
     let particles = [];
-    let colors = ['#FF0000', '#FF00FF', '#FF66B2'];
+    let brillos = [];
+    let colors = ['#FF0000', '#FF66B2', '#FFFFFF'];
     let explosionSound;
     let isMobile;
     let lastTouchTime = 0;
     let showReminder = false;
+    let clickCount = 0;
+    let maxClicks = 40;
+    let modoDedicatoria = false;
+
+    let dedicatoria = [
+      "Hola Yareni ;) ... Que tal, espero que est\u00e9s bien ...",
+      "Hace unos meses que no nos vemos pero en fin,",
+      "s\u00e9 que no nos conocemos muy bien que digamos y solo hablamos un par de veces",
+      "pero en ese poco tiempo me agradaste bastante de verdad ...",
+      "Y bueno jajaja ... Espero te haya gustado el c\u00f3digo que te hice :) ...",
+      "Se te quiere",
+      "Se te extra\u00f1a",
+      "Jajaja ... Bueno la verdad s\u00ed se te extra\u00f1a,",
+      "ojal\u00e1 tener la oportunidad de conocernos m\u00e1s muy pronto ...",
+      "Atte Caleb ...",
+      "Por cierto hace mucho que no escrib\u00eda una carta"
+    ];
+
+    let typingIndex = 0;
+    let lineIndex = 0;
+    let currentLine = "";
+    let typingDelay = 3;
+    let frameCounter = 0;
+    let borrando = false;
+    let brilloCount = 40;
 
     function preload() {
       explosionSound = loadSound('explosion.mp3');
@@ -42,12 +68,24 @@
       for (let i = 0; i < totalTexts; i++) {
         texts.push(new FallingText(i, totalTexts));
       }
-
+      for (let i = 0; i < brilloCount; i++) {
+        brillos.push(new Brillo());
+      }
       lastTouchTime = millis();
     }
 
     function draw() {
       background(0);
+
+      if (modoDedicatoria) {
+        for (let b of brillos) {
+          b.update();
+          b.show();
+        }
+        drawDedicatoria();
+        return;
+      }
+
       let currentTime = millis();
       showReminder = currentTime - lastTouchTime > 5000;
 
@@ -64,19 +102,31 @@
         }
       }
 
+      fill(255);
+      textSize(20);
+      text(`Taps: ${clickCount} / ${maxClicks}`, width - 100, 30);
+
       if (showReminder) {
-        textAlign(CENTER, CENTER);
         textSize(28);
-        textLeading(36); // Espaciado entre líneas
-        fill(255); // Color blanco
-        text("Toca la pantalla\nquerida cumpleañera ;)", width / 2, height / 2);
-        textSize(32); // Restaurar
+        textAlign(CENTER, CENTER);
+        textLeading(36);
+        text("Toca la pantalla\nquerida cumplea\u00f1era ;)\n\n", width / 2, height / 2);
+        textSize(32);
       }
     }
 
     function mousePressed() {
-      lastTouchTime = millis(); // reiniciar temporizador
+      if (modoDedicatoria) return;
+      lastTouchTime = millis();
       explosionSound.play();
+      clickCount++;
+
+      if (clickCount >= maxClicks) {
+        modoDedicatoria = true;
+        texts = []; // detener frases
+        return;
+      }
+
       let particleCount = isMobile ? 25 : 40;
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle(mouseX, mouseY));
@@ -85,8 +135,40 @@
       for (let t of texts) {
         let d = dist(mouseX, mouseY, t.x, t.y);
         if (d < 100) {
-          t.startDelay(); // solo espera antes de regenerarse
+          t.startDelay();
         }
+      }
+    }
+
+    function drawDedicatoria() {
+      fill(255);
+      textAlign(CENTER, CENTER);
+      textSize(26);
+      frameCounter++;
+
+      if (frameCounter % typingDelay === 0) {
+        if (!borrando && typingIndex <= dedicatoria[lineIndex].length) {
+          currentLine = dedicatoria[lineIndex].substring(0, typingIndex);
+          typingIndex++;
+        } else if (borrando && typingIndex >= 0) {
+          currentLine = dedicatoria[lineIndex].substring(0, typingIndex);
+          typingIndex--;
+        } else {
+          if (dedicatoria[lineIndex] === "Se te quiere" || dedicatoria[lineIndex] === "Se te extra\u00f1a" || dedicatoria[lineIndex] === "Por cierto hace mucho que no escrib\u00eda una carta") {
+            borrando = !borrando;
+            if (!borrando) {
+              lineIndex++;
+              typingIndex = 0;
+            }
+          } else {
+            lineIndex++;
+            typingIndex = 0;
+          }
+        }
+      }
+
+      if (lineIndex < dedicatoria.length) {
+        text(currentLine, width / 2, height / 2);
       }
     }
 
@@ -100,9 +182,7 @@
 
       reset(firstTime = false) {
         this.x = random(width);
-        this.y = firstTime
-          ? map(this.index, 0, this.total, -height * 2, -50)
-          : random(-300, -50);
+        this.y = firstTime ? map(this.index, 0, this.total, -height * 2, -50) : random(-300, -50);
         this.speed = random(isMobile ? 5 : 3, isMobile ? 10 : 7);
         this.color = random(colors);
         this.waiting = false;
@@ -111,16 +191,14 @@
       startDelay() {
         this.waiting = true;
         this.timer = millis();
-        this.delay = random(300, 900); // 0.3 a 0.9 s
+        this.delay = random(300, 900);
       }
 
       update() {
         this.y += this.speed;
-
         if (this.y > height + 50 && !this.waiting) {
           this.startDelay();
         }
-
         if (this.waiting && millis() - this.timer >= this.delay) {
           this.reset();
         }
@@ -156,6 +234,35 @@
         noStroke();
         fill(this.color);
         ellipse(this.x, this.y, 5);
+      }
+    }
+
+    class Brillo {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = random(width);
+        this.y = random(height);
+        this.size = random(2, 5);
+        this.speed = random(0.2, 0.5);
+        this.color = random(colors);
+        this.alpha = random(50, 150);
+      }
+
+      update() {
+        this.y -= this.speed;
+        if (this.y < 0) {
+          this.reset();
+          this.y = height;
+        }
+      }
+
+      show() {
+        noStroke();
+        fill(color(this.color + hex(this.alpha, 2)));
+        ellipse(this.x, this.y, this.size);
       }
     }
   </script>
