@@ -81,7 +81,7 @@ function draw() {
           indexFrase++;
           indexLetra = 0;
           if (indexFrase < dedicatoria.length) {
-            textoActual += "\n"; // mantener texto acumulado
+            textoActual += " "; // ← ← ← cambio aquí (en vez de "\n")
           } else {
             tiempoInicioBorrado = millis();
             modoBorrado = true;
@@ -172,7 +172,7 @@ class Letra {
     this.y = random(-100, -20);
     this.speed = random(1, 3);
     this.alpha = 255;
-    this.color = color(180, 100, 255); // Violeta
+    this.color = color(180, 100, 255); // ← Color violeta restaurado
   }
 
   update() {
