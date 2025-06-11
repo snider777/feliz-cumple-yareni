@@ -13,7 +13,6 @@
     }
     canvas {
       display: block;
-      margin: auto;
     }
   </style>
 </head>
@@ -23,18 +22,26 @@
     let particles = [];
     let colors = ['#FF0000', '#FF00FF', '#FF66B2'];
     let explosionSound;
+    let isMobile;
 
     function preload() {
       explosionSound = loadSound('explosion.mp3');
     }
 
     function setup() {
-      createCanvas(windowWidth * 0.9, windowHeight * 0.9); // 👈 resolución reducida
+      isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      createCanvas(windowWidth, windowHeight);
       frameRate(60);
       textFont('Arial');
-      textSize(32);
+
+      // Tamaño de texto adaptativo
+      textSize(isMobile ? 42 : 32);
       textAlign(CENTER, CENTER);
-      for (let i = 0; i < 15; i++) { // 👈 menos frases
+
+      // Menos textos en móvil
+      let totalTexts = isMobile ? 20 : 35;
+      for (let i = 0; i < totalTexts; i++) {
         texts.push(new FallingText());
       }
     }
@@ -57,7 +64,8 @@
 
     function mousePressed() {
       explosionSound.play();
-      for (let i = 0; i < 20; i++) { // 👈 menos partículas
+      let particleCount = isMobile ? 25 : 40;
+      for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle(mouseX, mouseY));
       }
 
@@ -77,7 +85,7 @@
       reset() {
         this.x = random(width);
         this.y = random(-200, -50);
-        this.speed = random(3, 6); // 👈 velocidad intermedia
+        this.speed = random(isMobile ? 4 : 2, isMobile ? 8 : 5); // más rápida en móviles
         this.color = random(colors);
       }
 
@@ -109,7 +117,7 @@
       update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.2; // gravedad
+        this.vy += 0.2;
         this.life--;
       }
 
