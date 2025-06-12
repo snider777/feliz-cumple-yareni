@@ -15,6 +15,8 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
+</head>
+<body>
   <script>
     let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
     let clickCount = 0;
@@ -42,9 +44,8 @@
     }
 
     function draw() {
-      background(0, 100); // transparencia para efecto de estela
+      background(0, 100);
 
-      // Crear nuevas gotas regularmente
       if (frameCount % 5 === 0) {
         let x = random(width);
         let y = -50;
@@ -52,7 +53,6 @@
         gotas.push({ x, y, speed, alpha: 255 });
       }
 
-      // Mostrar y actualizar gotas
       for (let i = gotas.length - 1; i >= 0; i--) {
         let g = gotas[i];
         fill(random(200,255), random(100,150), random(200,255), g.alpha);
@@ -66,6 +66,5 @@
       }
     }
   </script>
-</head>
-<body></body>
+</body>
 </html>
