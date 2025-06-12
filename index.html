@@ -1,236 +1,71 @@
-// FRASES DE LLUVIA (originales, sin añadidos)
-let frases = [
-  "Feliz cumple",
-  "Yareni :D"
-];
-
-let lluvia = [];
-let particulas = [];
-let explosiones = [];
-let cantidadParticulas = 100;
-
-let clics = 0;
-let modoDedicatoria = false;
-let modoBorrado = false;
-let modoExplosiones = false;
-let modoMensajeFinal = false;
-let modoOscurecer = false;
-
-let dedicatoria = [
-  { texto: "Hola Yareni ;) ... Que tal, espero que est\u00e9s bien ... Hace unos meses que no nos vemos pero en fin, s\u00e9 que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el c\u00f3digo que te hice :) ... ", borrar: false },
-  { texto: "Se te quiere", borrar: true },
-  { texto: "Se te extra\u00f1a", borrar: true },
-  { texto: "Jajaja  ... Bueno la verdad s\u00ed se te extra\u00f1a, ojal\u00e1 tener la oportunidad de conocernos m\u00e1s muy pronto ... Atte Caleb ... ", borrar: false },
-  { texto: "Por cierto hace mucho que no hac\u00eda una carta o algo de ese estilo ...", borrar: true }
-];
-
-let textoActual = "";
-let indexFrase = 0;
-let indexLetra = 0;
-let borrando = false;
-let tiempoLetra = 0;
-let tiempoInicioFinal;
-
-let mensajeFinal = "Ya no hay m\u00e1s sorpresas ni\u00f1a jajaja ... Que tengas un excelente cumple ... Mis mejores deseos :)";
-let mensajeFinalActual = "";
-let indexMensajeFinal = 0;
-let opacidadPantalla = 0;
-
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  textFont("Arial");
-  textAlign(CENTER, CENTER);
-  for (let i = 0; i < cantidadParticulas; i++) {
-    particulas.push(new Particula());
-  }
-}
-
-function draw() {
-  background(0);
-
-  for (let p of particulas) {
-    p.update();
-    p.display();
-  }
-
-  if (!modoDedicatoria) {
-    for (let l of lluvia) {
-      l.update();
-      l.display();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lluvia de Frases para Yareni</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
     }
-  }
+    canvas {
+      display: block;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
+  <script>
+    let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
+    let clickCount = 0;
+    let fraseIndex = 0;
+    let mensajeActual = frases[fraseIndex];
+    let gotas = [];
 
-  for (let e of explosiones) {
-    e.update();
-    e.display();
-  }
-  explosiones = explosiones.filter(e => !e.terminado());
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      fill(255);
+    }
 
-  if (modoDedicatoria && !modoBorrado && !modoMensajeFinal) {
-    fill(255);
-    textSize(28);
-    text(textoActual, width / 2, height / 2);
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
 
-    if (millis() - tiempoLetra > 50) {
-      let fraseObj = dedicatoria[indexFrase];
-      if (!borrando) {
-        if (indexLetra < fraseObj.texto.length) {
-          textoActual += fraseObj.texto[indexLetra];
-          indexLetra++;
-        } else {
-          if (fraseObj.borrar) {
-            borrando = true;
-          } else {
-            indexFrase++;
-            indexLetra = 0;
-          }
-        }
-      } else {
-        if (textoActual.length > 0) {
-          textoActual = textoActual.substring(0, textoActual.length - 1);
-        } else {
-          borrando = false;
-          indexFrase++;
-          indexLetra = 0;
+    function mousePressed() {
+      clickCount++;
+      if (clickCount % 5 === 0) {
+        fraseIndex = (fraseIndex + 1) % frases.length;
+        mensajeActual = frases[fraseIndex];
+      }
+    }
+
+    function draw() {
+      background(0, 100); // transparencia para efecto de estela
+
+      // Crear nuevas gotas regularmente
+      if (frameCount % 5 === 0) {
+        let x = random(width);
+        let y = -50;
+        let speed = random(2, 6);
+        gotas.push({ x, y, speed, alpha: 255 });
+      }
+
+      // Mostrar y actualizar gotas
+      for (let i = gotas.length - 1; i >= 0; i--) {
+        let g = gotas[i];
+        fill(random(200,255), random(100,150), random(200,255), g.alpha);
+        text(mensajeActual, g.x, g.y);
+        g.y += g.speed;
+        g.alpha -= 1.5;
+
+        if (g.alpha <= 0 || g.y > height + 50) {
+          gotas.splice(i, 1);
         }
       }
-      tiempoLetra = millis();
     }
-
-    if (indexFrase >= dedicatoria.length && !modoBorrado) {
-      modoBorrado = true;
-      tiempoInicioFinal = millis();
-    }
-  }
-
-  if (modoBorrado && !modoMensajeFinal) {
-    if (millis() - tiempoInicioFinal > 15000) {
-      modoExplosiones = true;
-      modoMensajeFinal = true;
-    }
-  }
-
-  if (modoExplosiones) {
-    if (frameCount % 10 === 0 && random() < 0.4) {
-      explosiones.push(new Explosion(random(width), random(height)));
-    }
-
-    if (particulas.length < 200) {
-      particulas.push(new Particula());
-    }
-  }
-
-  if (modoMensajeFinal) {
-    fill(255);
-    textSize(24);
-    text(mensajeFinalActual, width / 2, height / 2 + 150);
-    if (frameCount % 3 === 0 && indexMensajeFinal < mensajeFinal.length) {
-      mensajeFinalActual += mensajeFinal[indexMensajeFinal];
-      indexMensajeFinal++;
-    } else if (indexMensajeFinal >= mensajeFinal.length) {
-      modoOscurecer = true;
-    }
-  }
-
-  if (modoOscurecer) {
-    if (opacidadPantalla < 255) {
-      opacidadPantalla += 1;
-    }
-    fill(0, opacidadPantalla);
-    rect(0, 0, width, height);
-  }
-}
-
-function mousePressed() {
-  if (!modoDedicatoria) {
-    clics++;
-    lluvia.push(new Letra(random(frases)));
-    explosiones.push(new Explosion(mouseX, mouseY));
-
-    if (clics >= 40) {
-      modoDedicatoria = true;
-      textoActual = "";
-      indexFrase = 0;
-      indexLetra = 0;
-      tiempoLetra = millis();
-      lluvia = [];
-    }
-  }
-}
-
-class Letra {
-  constructor(txt) {
-    this.txt = txt;
-    this.x = random(width);
-    this.y = random(-100, -20);
-    this.speed = random(1, 3);
-    this.color = color(180, 100, 255);
-  }
-  update() {
-    this.y += this.speed;
-    if (this.y > height) {
-      this.y = random(-100, -20);
-      this.x = random(width);
-    }
-  }
-  display() {
-    fill(this.color);
-    textSize(24);
-    text(this.txt, this.x, this.y);
-  }
-}
-
-class Particula {
-  constructor() {
-    this.x = random(width);
-    this.y = random(height);
-    this.size = random(1, 3);
-    this.speed = random(0.2, 0.7);
-  }
-  update() {
-    this.y += this.speed;
-    if (this.y > height) {
-      this.y = 0;
-      this.x = random(width);
-    }
-  }
-  display() {
-    fill(150, 100);
-    noStroke();
-    ellipse(this.x, this.y, this.size);
-  }
-}
-
-class Explosion {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.particles = [];
-    for (let i = 0; i < 20; i++) {
-      this.particles.push({
-        x: this.x,
-        y: this.y,
-        vx: random(-3, 3),
-        vy: random(-3, 3),
-        alpha: 255
-      });
-    }
-  }
-  update() {
-    for (let p of this.particles) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.alpha -= 5;
-    }
-  }
-  display() {
-    noStroke();
-    for (let p of this.particles) {
-      fill(255, p.alpha);
-      ellipse(p.x, p.y, 5);
-    }
-  }
-  terminado() {
-    return this.particles.every(p => p.alpha <= 0);
-  }
-}
+  </script>
+</head>
+<body></body>
+</html>
