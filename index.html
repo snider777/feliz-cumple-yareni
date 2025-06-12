@@ -9,6 +9,7 @@
       margin: 0;
       overflow: hidden;
       background: black;
+      color: white;
     }
     canvas {
       display: block;
@@ -23,10 +24,16 @@
     let fraseIndex = 0;
     let mensajeActual = frases[fraseIndex];
     let gotas = [];
+    let mostrarDedicatoria = false;
+    let textoDedicatoria = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja  ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
+    let textoMostrado = "";
+    let indexLetra = 0;
+    let tiempoEscritura = 0;
+    let velocidadEscritura = 50;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      textSize(32);
+      textSize(26);
       textAlign(CENTER, CENTER);
       fill(255);
     }
@@ -36,33 +43,61 @@
     }
 
     function mousePressed() {
-      clickCount++;
-      if (clickCount % 5 === 0) {
-        fraseIndex = (fraseIndex + 1) % frases.length;
-        mensajeActual = frases[fraseIndex];
+      if (!mostrarDedicatoria) {
+        clickCount++;
+        if (clickCount % 5 === 0) {
+          fraseIndex = (fraseIndex + 1) % frases.length;
+          mensajeActual = frases[fraseIndex];
+        }
+        if (clickCount >= 30) {
+          mostrarDedicatoria = true;
+        }
       }
     }
 
     function draw() {
       background(0, 100);
 
-      if (frameCount % 5 === 0) {
-        let x = random(width);
-        let y = -50;
-        let speed = random(2, 6);
-        gotas.push({ x, y, speed, alpha: 255 });
+      // Mostrar contador
+      textSize(20);
+      textAlign(LEFT, TOP);
+      text("Clics: " + clickCount, 20, 20);
+
+      // Lluvia de frases antes de los 30 clics
+      if (!mostrarDedicatoria) {
+        textAlign(CENTER, CENTER);
+        textSize(28);
+        if (frameCount % 5 === 0) {
+          let x = random(width);
+          let y = -50;
+          let speed = random(2, 6);
+          gotas.push({ x, y, speed, alpha: 255 });
+        }
+
+        for (let i = gotas.length - 1; i >= 0; i--) {
+          let g = gotas[i];
+          fill(random(200,255), random(100,150), random(200,255), g.alpha);
+          text(mensajeActual, g.x, g.y);
+          g.y += g.speed;
+          g.alpha -= 1.5;
+
+          if (g.alpha <= 0 || g.y > height + 50) {
+            gotas.splice(i, 1);
+          }
+        }
       }
 
-      for (let i = gotas.length - 1; i >= 0; i--) {
-        let g = gotas[i];
-        fill(random(200,255), random(100,150), random(200,255), g.alpha);
-        text(mensajeActual, g.x, g.y);
-        g.y += g.speed;
-        g.alpha -= 1.5;
-
-        if (g.alpha <= 0 || g.y > height + 50) {
-          gotas.splice(i, 1);
+      // Escritura tipo máquina de escribir
+      if (mostrarDedicatoria) {
+        textAlign(LEFT, TOP);
+        fill(255);
+        textSize(24);
+        if (millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoDedicatoria.length) {
+          textoMostrado += textoDedicatoria[indexLetra];
+          indexLetra++;
+          tiempoEscritura = millis();
         }
+        text(textoMostrado, 40, 80, width - 80, height - 100);
       }
     }
   </script>
