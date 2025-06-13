@@ -25,7 +25,6 @@
       font-size: 20px;
       font-family: 'Arial';
       white-space: pre-wrap;
-      color: white;
     }
     canvas {
       display: block;
@@ -44,20 +43,26 @@
     let mensajeActual = frases[fraseIndex];
     let gotas = [];
     let mostrarDedicatoria = false;
+    let mensajeFinalizado = false;
+
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
     let indexLetra = 0;
     let tiempoEscritura = 0;
-    let velocidadEscritura = 45;
+    let velocidadEscritura = 100;
     let borrando = false;
     let borrarDesde = null;
     let borrarHasta = null;
+    let esperando = false;
+    let tiempoEspera = 0;
+    let finalizado = false;
+    let borrandoFinal = false;
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
+
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
-      { texto: "Se te extraña", borrado: false },
-      { texto: "Por cierto hace mucho que no hacía una carta", borrado: false }
+      { texto: "Se te extraña", borrado: false }
     ];
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // rojo claro, rosa fuerte, fucsia
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
@@ -116,24 +121,32 @@
       }
 
       // Dedicatoria
-      if (mostrarDedicatoria) {
-        if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+      if (mostrarDedicatoria && !borrandoFinal) {
+        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
           indexLetra++;
           tiempoEscritura = millis();
         }
 
-        // Verifica si toca borrar algo
+        // Detectar texto a borrar
         for (let parte of partesABorrar) {
           if (!parte.borrado && textoVisible.includes(parte.texto)) {
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
             borrarHasta = borrarDesde + parte.texto.length;
-            borrando = true;
+            esperando = true;
+            tiempoEspera = millis();
             parte.borrado = true;
             break;
           }
         }
 
+        // Esperar 3 segundos antes de borrar
+        if (esperando && millis() - tiempoEspera >= 3000) {
+          borrando = true;
+          esperando = false;
+        }
+
+        // Borrar letra por letra hacia atrás
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
@@ -142,12 +155,27 @@
           }
         }
 
+        // Iniciar borrado final cuando se termina todo
+        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
+          mensajeFinalizado = true;
+          setTimeout(() => {
+            borrandoFinal = true;
+            indexLetra = textoVisible.length;
+          }, 1000);
+        }
+
+        // Borrado final hacia adelante
+        if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
+          textoVisible = textoVisible.substring(1);
+          tiempoEscritura = millis();
+        }
+
+        // Mostrar texto con colores aleatorios
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
           dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
         }
-
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
     }
