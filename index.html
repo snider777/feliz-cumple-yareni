@@ -1,185 +1,177 @@
-// Usa p5.js
-let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
-let mensaje = [
-  { texto: "Hola Yareni ;) ... Que tal, espero que estés bien ...", borrar: false },
-  { texto: "Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ...", borrar: false },
-  { texto: "Y bueno jajaja ...", borrar: false },
-  { texto: "Espero te haya gustado el código que te hice :) ...", borrar: false },
-  { texto: "Se te quiere", borrar: true },
-  { texto: "Se te extraña", borrar: true },
-  { texto: "Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ...", borrar: false },
-  { texto: "Atte Caleb ...", borrar: false },
-  { texto: "Por cierto hace mucho que no hacía una carta o algo de ese estilo ...", borrar: false }
-];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Feliz cumple Yareni</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: black; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script>
+    let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
+    let mensaje = [
+      { texto: "Hola Yareni ;) ... Que tal, espero que estés bien ...", borrar: false },
+      { texto: "Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ...", borrar: false },
+      { texto: "Y bueno jajaja ...", borrar: false },
+      { texto: "Espero te haya gustado el código que te hice :) ...", borrar: false },
+      { texto: "Se te quiere", borrar: true },
+      { texto: "Se te extraña", borrar: true },
+      { texto: "Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ...", borrar: false },
+      { texto: "Atte Caleb ...", borrar: false },
+      { texto: "Por cierto hace mucho que no hacía una carta o algo de ese estilo ...", borrar: false }
+    ];
 
-let lluvia = [];
-let fraseActual = 0;
-let contadorClicks = 0;
-let maxClicks = 30;
-let mostrandoMensaje = false;
-let mensajeIndex = 0;
-let letraIndex = 0;
-let textoMostrado = "";
-let esperando = false;
-let temporizador;
-let borrando = false;
-let mensajeCompleto = [];
-let finDedicatoria = false;
-let particulas = [];
+    let lluvia = [], fraseActual = 0, contadorClicks = 0, maxClicks = 30;
+    let mostrandoMensaje = false, mensajeIndex = 0, letraIndex = 0;
+    let textoMostrado = "", esperando = false, temporizador;
+    let mensajeCompleto = [], finDedicatoria = false, borrando = false;
+    let particulas = [];
 
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  textAlign(CENTER, CENTER);
-  textSize(24);
-  textFont('Arial');
-  nuevaFrase();
-}
-
-function draw() {
-  background(0);
-
-  if (!mostrandoMensaje) {
-    fill(255);
-    textSize(16);
-    text(`Clicks: ${contadorClicks} / ${maxClicks}`, width - 100, 30);
-    lluvia.forEach(f => {
-      f.y += f.speed;
-      fill(f.color);
-      text(f.texto, f.x, f.y);
-    });
-  } else {
-    mostrarDedicatoria();
-    actualizarParticulas();
-  }
-}
-
-function mousePressed() {
-  if (mostrandoMensaje) return;
-  contadorClicks++;
-  fraseActual = (fraseActual + 1) % frases.length;
-  nuevaFrase();
-  if (contadorClicks >= maxClicks) {
-    mostrandoMensaje = true;
-    setTimeout(mostrarSiguienteLinea, 1000);
-  }
-}
-
-function nuevaFrase() {
-  lluvia = [];
-  for (let i = 0; i < 10; i++) {
-    lluvia.push({
-      texto: frases[fraseActual],
-      x: random(width),
-      y: random(-200, -50),
-      speed: random(1, 3),
-      color: color(random(["#ff4d6d", "#ff66c4", "#f72585"]))
-    });
-  }
-}
-
-function mostrarDedicatoria() {
-  background(0);
-  fill(random(["#ff4d6d", "#ff66c4", "#f72585"]));
-  textAlign(LEFT, TOP);
-  textSize(20);
-  let lineHeight = 30;
-  for (let i = 0; i < mensajeCompleto.length; i++) {
-    text(mensajeCompleto[i], 20, i * lineHeight + 20);
-  }
-  if (mensajeIndex < mensaje.length && !esperando) {
-    escribirMensaje();
-  } else if (mensajeIndex >= mensaje.length && !borrando && !finDedicatoria) {
-    setTimeout(() => {
-      borrando = true;
-      letraIndex = 0;
-    }, 1500);
-    finDedicatoria = true;
-  } else if (borrando) {
-    borrarMensaje();
-  }
-  generarParticulas();
-}
-
-function escribirMensaje() {
-  let linea = mensaje[mensajeIndex];
-  if (letraIndex <= linea.texto.length) {
-    textoMostrado = linea.texto.substring(0, letraIndex);
-    if (letraIndex > 0) {
-      let c = linea.texto.charAt(letraIndex - 1);
-      if (c === ',' || linea.texto.substring(letraIndex - 3, letraIndex) === '...') {
-        esperando = true;
-        setTimeout(() => {
-          esperando = false;
-          letraIndex++;
-        }, 1000);
-        return;
-      }
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textAlign(CENTER, CENTER);
+      textSize(24);
+      textFont('Arial');
+      nuevaFrase();
     }
-    letraIndex++;
-    if (letraIndex > linea.texto.length) {
-      mensajeCompleto.push(textoMostrado);
-      if (linea.borrar) {
-        esperando = true;
-        setTimeout(() => {
-          letraIndex = linea.texto.length;
-          borrarLinea();
-        }, 1300);
+
+    function draw() {
+      background(0);
+      if (!mostrandoMensaje) {
+        fill(255);
+        textSize(16);
+        text(`Clicks: ${contadorClicks} / ${maxClicks}`, width - 100, 30);
+        actualizarParticulas();
+        lluvia.forEach(f => {
+          f.y += f.speed;
+          fill(f.color);
+          text(f.texto, f.x, f.y);
+          if (f.y > height) f.y = random(-200, -50);
+        });
       } else {
-        esperando = true;
-        setTimeout(() => {
-          esperando = false;
-          mensajeIndex++;
-          letraIndex = 0;
-        }, 1300);
+        mostrarDedicatoria();
+        actualizarParticulas();
       }
     }
-  }
-}
 
-function borrarLinea() {
-  let linea = mensaje[mensajeIndex].texto;
-  if (letraIndex >= 0) {
-    textoMostrado = linea.substring(0, letraIndex);
-    letraIndex--;
-    if (letraIndex < 0) {
-      mensajeIndex++;
+    function mousePressed() {
+      if (mostrandoMensaje) return;
+      contadorClicks++;
+      fraseActual = (fraseActual + 1) % frases.length;
+      nuevaFrase();
+      if (contadorClicks >= maxClicks) {
+        mostrandoMensaje = true;
+        setTimeout(mostrarSiguienteLinea, 1000);
+      }
+    }
+
+    function nuevaFrase() {
+      lluvia = [];
+      for (let i = 0; i < 10; i++) {
+        lluvia.push({
+          texto: frases[fraseActual],
+          x: random(width),
+          y: random(-200, -50),
+          speed: random(1, 3),
+          color: color(random(["#ff4d6d", "#ff66c4", "#f72585"]))
+        });
+      }
+    }
+
+    function mostrarDedicatoria() {
+      background(0);
+      fill(255);
+      textAlign(LEFT, TOP);
+      textSize(20);
+      let lineHeight = 30;
+      for (let i = 0; i < mensajeCompleto.length; i++) {
+        fill(mensajeCompleto[i].color);
+        text(mensajeCompleto[i].texto, 20, i * lineHeight + 20);
+      }
+      if (mensajeIndex < mensaje.length && !esperando && !borrando && !finDedicatoria) {
+        setTimeout(() => {
+          if (mensaje[mensajeIndex].borrar) {
+            borrando = true;
+            setTimeout(borrarMensaje, 1300);
+          } else {
+            escribirMensaje();
+          }
+        }, 1500);
+        esperando = true;
+      }
+    }
+
+    function escribirMensaje() {
+      let linea = mensaje[mensajeIndex];
+      if (letraIndex <= linea.texto.length) {
+        textoMostrado = linea.texto.substring(0, letraIndex);
+        if (letraIndex > 0) {
+          let c = linea.texto.charAt(letraIndex - 1);
+          if (c === ',' || linea.texto.substring(letraIndex - 3, letraIndex) === '...') {
+            esperando = true;
+            setTimeout(() => { esperando = false; letraIndex++; escribirMensaje(); }, 1000);
+            return;
+          }
+        }
+        if (letraIndex === linea.texto.length) {
+          mensajeCompleto.push({ texto: textoMostrado, color: color(random(["#ff4d6d", "#ff66c4", "#f72585"])) });
+          esperando = true;
+          letraIndex = 0;
+          mensajeIndex++;
+          setTimeout(mostrarSiguienteLinea, 1300);
+        } else {
+          letraIndex++;
+          setTimeout(escribirMensaje, 100);
+        }
+      }
+    }
+
+    function mostrarSiguienteLinea() {
       esperando = false;
       letraIndex = 0;
+      escribirMensaje();
     }
-  }
-}
 
-function borrarMensaje() {
-  if (mensajeCompleto.length > 0) {
-    let linea = mensajeCompleto[0];
-    if (letraIndex < linea.length) {
-      mensajeCompleto[0] = linea.substring(letraIndex);
-      letraIndex++;
-    } else {
-      mensajeCompleto.shift();
-      letraIndex = 0;
+    function borrarMensaje() {
+      if (mensajeCompleto.length > 0) {
+        let linea = mensajeCompleto[mensajeCompleto.length - 1].texto;
+        if (letraIndex < linea.length) {
+          mensajeCompleto[mensajeCompleto.length - 1].texto = linea.substring(0, linea.length - letraIndex);
+          letraIndex++;
+          setTimeout(borrarMensaje, 120);
+        } else {
+          mensajeCompleto.pop();
+          letraIndex = 0;
+          borrando = false;
+          mensajeIndex++;
+          setTimeout(mostrarSiguienteLinea, 1000);
+        }
+      }
     }
-  }
-}
 
-function generarParticulas() {
-  particulas.push({
-    x: random(width),
-    y: 0,
-    speed: random(1, 3),
-    color: color(random(["#ff4d6d", "#ff66c4", "#f72585"]))
-  });
-}
+    function actualizarParticulas() {
+      for (let p of particulas) {
+        fill(p.color);
+        ellipse(p.x, p.y, 5, 5);
+        p.y += p.speed;
+      }
+      particulas = particulas.filter(p => p.y < height);
+      if (frameCount % 3 === 0) {
+        particulas.push({
+          x: random(width),
+          y: 0,
+          speed: random(1, 3),
+          color: color(random(["#ff4d6d", "#ff66c4", "#f72585"]))
+        });
+      }
+    }
 
-function actualizarParticulas() {
-  for (let p of particulas) {
-    fill(p.color);
-    ellipse(p.x, p.y, 5, 5);
-    p.y += p.speed;
-  }
-  particulas = particulas.filter(p => p.y < height);
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-}
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</body>
+</html>
