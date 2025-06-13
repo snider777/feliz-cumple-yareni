@@ -2,29 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Para Yareni</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lluvia de Frases para Yareni</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: black;
       color: white;
-    }
-    #scrollContainer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow-y: auto;
-      pointer-events: none;
-    }
-    #dedicatoria {
-      padding: 40px;
-      font-size: 20px;
-      font-family: 'Arial';
-      white-space: pre-wrap;
     }
     canvas {
       display: block;
@@ -33,9 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
 </head>
 <body>
-  <div id="scrollContainer">
-    <div id="dedicatoria"></div>
-  </div>
   <script>
     let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
     let clickCount = 0;
@@ -43,31 +25,17 @@
     let mensajeActual = frases[fraseIndex];
     let gotas = [];
     let mostrarDedicatoria = false;
-    let mensajeFinalizado = false;
-
-    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
-    let textoVisible = "";
+    let textoDedicatoria = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja  ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
+    let textoMostrado = "";
     let indexLetra = 0;
     let tiempoEscritura = 0;
-    let velocidadEscritura = 100;
-    let borrando = false;
-    let borrarDesde = null;
-    let borrarHasta = null;
-    let esperando = false;
-    let tiempoEspera = 0;
-    let finalizado = false;
-    let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
-
-    let partesABorrar = [
-      { texto: "Se te quiere", borrado: false },
-      { texto: "Se te extraña", borrado: false }
-    ];
+    let velocidadEscritura = 50;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
       textSize(26);
       textAlign(CENTER, CENTER);
+      fill(255);
     }
 
     function windowResized() {
@@ -83,7 +51,6 @@
         }
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
-          document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
       }
     }
@@ -92,12 +59,11 @@
       background(0, 100);
 
       // Mostrar contador
-      fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia antes de la dedicatoria
+      // Lluvia de frases antes de los 30 clics
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(28);
@@ -110,73 +76,28 @@
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          fill(random(200, 255), random(100, 150), random(200, 255), g.alpha);
+          fill(random(200,255), random(100,150), random(200,255), g.alpha);
           text(mensajeActual, g.x, g.y);
           g.y += g.speed;
           g.alpha -= 1.5;
+
           if (g.alpha <= 0 || g.y > height + 50) {
             gotas.splice(i, 1);
           }
         }
       }
 
-      // Dedicatoria
-      if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
-          textoVisible += textoBase[indexLetra];
+      // Escritura tipo máquina de escribir
+      if (mostrarDedicatoria) {
+        textAlign(LEFT, TOP);
+        fill(255);
+        textSize(24);
+        if (millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoDedicatoria.length) {
+          textoMostrado += textoDedicatoria[indexLetra];
           indexLetra++;
           tiempoEscritura = millis();
         }
-
-        // Detectar texto a borrar
-        for (let parte of partesABorrar) {
-          if (!parte.borrado && textoVisible.includes(parte.texto)) {
-            borrarDesde = textoVisible.lastIndexOf(parte.texto);
-            borrarHasta = borrarDesde + parte.texto.length;
-            esperando = true;
-            tiempoEspera = millis();
-            parte.borrado = true;
-            break;
-          }
-        }
-
-        // Esperar 3 segundos antes de borrar
-        if (esperando && millis() - tiempoEspera >= 3000) {
-          borrando = true;
-          esperando = false;
-        }
-
-        // Borrar letra por letra hacia atrás
-        if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
-          textoVisible = textoVisible.slice(0, textoVisible.length - 1);
-          tiempoEscritura = millis();
-          if (textoVisible.length <= borrarDesde) {
-            borrando = false;
-          }
-        }
-
-        // Iniciar borrado final cuando se termina todo
-        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
-          mensajeFinalizado = true;
-          setTimeout(() => {
-            borrandoFinal = true;
-            indexLetra = textoVisible.length;
-          }, 1000);
-        }
-
-        // Borrado final hacia adelante
-        if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
-          textoVisible = textoVisible.substring(1);
-          tiempoEscritura = millis();
-        }
-
-        // Mostrar texto con colores aleatorios
-        let dedicatoriaHTML = "";
-        for (let c of textoVisible) {
-          let color = random(coloresTexto);
-          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
-        }
-        document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
+        text(textoMostrado, 40, 80, width - 80, height - 100);
       }
     }
   </script>
