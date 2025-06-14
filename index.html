@@ -2,16 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Para Yareni</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
+    body, html {
       margin: 0;
+      padding: 0;
       overflow: hidden;
       background: black;
-      color: white;
       font-family: 'Poppins', sans-serif;
     }
 
@@ -30,13 +28,6 @@
       padding: 40px;
       font-size: 20px;
       white-space: pre-wrap;
-    }
-
-    canvas {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
     }
 
     #inicio {
@@ -72,6 +63,7 @@
       100% { background-position: 0% 50%; }
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
 </head>
 <body>
@@ -85,205 +77,68 @@
   </div>
 
   <script>
-    let gotas = [];
-    let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
-    let clickCount = 0;
-    let fraseIndex = 0;
-    let mostrarDedicatoria = false;
-    let mensajeFinalizado = false;
-
-    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
-    let textoVisible = "";
-    let indexLetra = 0;
-    let tiempoEscritura = 0;
-    let velocidadEscritura = 100;
-    let borrando = false;
-    let borrarDesde = null;
-    let borrarHasta = null;
-    let esperando = false;
-    let tiempoEspera = 0;
-    let finalizado = false;
-    let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
-    let partesABorrar = [
-      { texto: "Se te quiere", borrado: false },
-      { texto: "Se te extraña", borrado: false }
-    ];
-
     let musica;
     let particulas = [];
-    let inicioActivo = true;
+    let mostrarTodo = false;
 
     function preload() {
-      musica = loadSound('take-on-me.mp3');
+      musica = loadSound("take-on-me.mp3");
     }
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      textSize(26);
-      textAlign(CENTER, CENTER);
       textFont('Poppins');
+      textAlign(CENTER, CENTER);
+      textSize(24);
 
-      // partículas fondo inicial
+      // crear partículas desde el principio
       for (let i = 0; i < 150; i++) {
         particulas.push({
           x: random(width),
           y: random(height),
           size: random(1, 4),
-          speed: random(0.2, 1),
-          color: random(coloresTexto)
+          speed: random(0.5, 1.5),
+          color: color(random(200, 255), random(50, 150), random(150, 255))
         });
       }
 
       document.getElementById("empezarBtn").addEventListener("click", () => {
         document.getElementById("inicio").style.display = "none";
-        inicioActivo = false;
-        musica.loop();
+        mostrarTodo = true;
+        if (!musica.isPlaying()) {
+          musica.loop();
+        }
       });
+    }
+
+    function draw() {
+      background(0);
+
+      // Partículas siempre visibles (inicio y luego fondo)
+      for (let p of particulas) {
+        fill(p.color);
+        noStroke();
+        ellipse(p.x, p.y, p.size);
+        p.y += p.speed;
+        if (p.y > height) {
+          p.y = 0;
+          p.x = random(width);
+        }
+      }
+
+      // Si ya empezó, entonces ejecuta el resto
+      if (mostrarTodo) {
+        // Aquí puedes agregar todo tu código de animación:
+        // lluvia de frases, clics, dedicatoria, etc.
+
+        // Ejemplo temporal:
+        fill(255);
+        text("¡Animación iniciada!", width / 2, height / 2);
+      }
     }
 
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
-    }
-
-    function mousePressed() {
-      if (!mostrarDedicatoria && !inicioActivo) {
-        clickCount++;
-        if (clickCount % 2 === 0) {
-          fraseIndex = (fraseIndex + 1) % frases.length;
-          for (let g of gotas) g.texto = frases[fraseIndex];
-        }
-
-        if (clickCount >= 30) {
-          mostrarDedicatoria = true;
-          document.getElementById("scrollContainer").style.pointerEvents = "auto";
-        }
-
-        for (let i = 0; i < 20; i++) {
-          let ang = random(TWO_PI);
-          let speed = random(2, 6);
-          gotas.push({
-            x: mouseX,
-            y: mouseY,
-            dx: cos(ang) * speed,
-            dy: sin(ang) * speed,
-            texto: frases[fraseIndex],
-            alpha: 255,
-            explosion: true
-          });
-        }
-      }
-    }
-
-    function draw() {
-      background(0, 100);
-
-      if (inicioActivo) {
-        for (let p of particulas) {
-          fill(p.color);
-          noStroke();
-          ellipse(p.x, p.y, p.size);
-          p.y += p.speed;
-          if (p.y > height) {
-            p.y = 0;
-            p.x = random(width);
-          }
-        }
-        return;
-      }
-
-      fill(255);
-      textSize(20);
-      textAlign(LEFT, TOP);
-      text("Clics: " + clickCount, 20, 20);
-
-      if (!mostrarDedicatoria) {
-        textAlign(CENTER, CENTER);
-        textSize(24);
-        if (frameCount % 8 === 0) {
-          let x = random(width);
-          let y = -30;
-          let speed = random(2, 4);
-          gotas.push({
-            x: x,
-            y: y,
-            speed: speed,
-            alpha: 255,
-            texto: frases[fraseIndex],
-            explosion: false
-          });
-        }
-
-        for (let i = gotas.length - 1; i >= 0; i--) {
-          let g = gotas[i];
-          let color = random(coloresTexto);
-          fill(color + hex(g.alpha, 2));
-          text(g.texto, g.x, g.y);
-          if (g.explosion) {
-            g.x += g.dx;
-            g.y += g.dy;
-            g.alpha -= 5;
-          } else {
-            g.y += g.speed;
-            g.alpha -= 1.5;
-          }
-          if (g.alpha <= 0 || g.y > height + 50) {
-            gotas.splice(i, 1);
-          }
-        }
-      }
-
-      if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
-          textoVisible += textoBase[indexLetra];
-          indexLetra++;
-          tiempoEscritura = millis();
-        }
-
-        for (let parte of partesABorrar) {
-          if (!parte.borrado && textoVisible.includes(parte.texto)) {
-            borrarDesde = textoVisible.lastIndexOf(parte.texto);
-            borrarHasta = borrarDesde + parte.texto.length;
-            esperando = true;
-            tiempoEspera = millis();
-            parte.borrado = true;
-            break;
-          }
-        }
-
-        if (esperando && millis() - tiempoEspera >= 1300) {
-          borrando = true;
-          esperando = false;
-        }
-
-        if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
-          textoVisible = textoVisible.slice(0, textoVisible.length - 1);
-          tiempoEscritura = millis();
-          if (textoVisible.length <= borrarDesde) {
-            borrando = false;
-          }
-        }
-
-        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
-          mensajeFinalizado = true;
-          setTimeout(() => {
-            borrandoFinal = true;
-            indexLetra = textoVisible.length;
-          }, 1000);
-        }
-
-        if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
-          textoVisible = textoVisible.substring(1);
-          tiempoEscritura = millis();
-        }
-
-        let dedicatoriaHTML = "";
-        for (let c of textoVisible) {
-          let color = random(coloresTexto);
-          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
-        }
-        document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
-      }
     }
   </script>
 </body>
