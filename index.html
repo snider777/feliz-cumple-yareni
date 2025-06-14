@@ -1,48 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Para Yareni</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      color: white;
-      font-family: 'Poppins', sans-serif;
-    }
-    #scrollContainer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow-y: auto;
-      pointer-events: none;
-    }
-    #dedicatoria {
-      padding: 40px;
-      font-size: 20px;
-      white-space: pre-wrap;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
-</head>
-<body>
-  <div id="scrollContainer">
-    <div id="dedicatoria"></div>
-  </div>
-
-  <!-- AUDIO -->
-  <audio id="bgMusic" autoplay loop>
-    <source src="take-on-me.mp3" type="audio/mp3">
-    Tu navegador no soporta el elemento de audio.
-  </audio>
+<!-- ... la misma parte del <head> y el <body> -->
 
   <script>
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
@@ -72,6 +28,8 @@
       { texto: "Se te extraña", borrado: false }
     ];
 
+    let particulas = [];
+
     function setup() {
       createCanvas(windowWidth, windowHeight);
       textSize(26);
@@ -84,7 +42,6 @@
     }
 
     function mousePressed() {
-      // Iniciar la música al primer clic (si no ha empezado)
       if (!musicaIniciada) {
         let audio = document.getElementById("bgMusic");
         audio.play();
@@ -102,9 +59,9 @@
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
+          crearParticulas(); // crear partículas al iniciar dedicatoria
         }
 
-        // Explosión
         for (let i = 0; i < 20; i++) {
           let ang = random(TWO_PI);
           let speed = random(2, 6);
@@ -121,16 +78,47 @@
       }
     }
 
+    function crearParticulas() {
+      for (let i = 0; i < 100; i++) {
+        particulas.push({
+          x: random(width),
+          y: random(height),
+          dx: random(-0.3, 0.3),
+          dy: random(-0.3, 0.3),
+          size: random(2, 4),
+          alpha: random(150, 255),
+          color: random(coloresTexto)
+        });
+      }
+    }
+
+    function moverYdibujarParticulas() {
+      for (let p of particulas) {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0 || p.x > width) p.dx *= -1;
+        if (p.y < 0 || p.y > height) p.dy *= -1;
+
+        fill(p.color + hex(p.alpha, 2));
+        noStroke();
+        ellipse(p.x, p.y, p.size);
+      }
+    }
+
     function draw() {
       background(0, 100);
 
-      // Mostrar contador
+      // Partículas durante dedicatoria
+      if (mostrarDedicatoria) {
+        moverYdibujarParticulas();
+      }
+
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
@@ -169,7 +157,6 @@
         }
       }
 
-      // Dedicatoria
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
