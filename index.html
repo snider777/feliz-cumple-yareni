@@ -31,11 +31,25 @@
     canvas {
       display: block;
     }
+    #botonInicio {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ff4da6;
+      color: white;
+      font-size: 24px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 10;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/addons/p5.sound.min.js"></script>
 </head>
 <body>
+  <button id="botonInicio">Empezar</button>
   <div id="scrollContainer">
     <div id="dedicatoria"></div>
   </div>
@@ -59,7 +73,7 @@
     let tiempoEspera = 0;
     let finalizado = false;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -79,7 +93,11 @@
       textAlign(CENTER, CENTER);
       textFont('Poppins');
       cancion.setVolume(0.5);
-      cancion.loop();
+
+      document.getElementById("botonInicio").addEventListener("click", () => {
+        cancion.loop();
+        document.getElementById("botonInicio").style.display = "none";
+      });
     }
 
     function windowResized() {
@@ -120,13 +138,12 @@
     function draw() {
       background(0, 100);
 
-      // Mostrar contador
+      // Contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
