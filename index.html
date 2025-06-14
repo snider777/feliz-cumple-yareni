@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Para Yareni</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: black;
       color: white;
+      font-family: 'Poppins', sans-serif;
     }
     #scrollContainer {
       position: absolute;
@@ -23,7 +25,7 @@
     #dedicatoria {
       padding: 40px;
       font-size: 20px;
-      font-family: 'Arial';
+      font-family: 'Poppins', sans-serif;
       white-space: pre-wrap;
     }
     canvas {
@@ -37,10 +39,9 @@
     <div id="dedicatoria"></div>
   </div>
   <script>
-    let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
+    let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
     let fraseIndex = 0;
-    let mensajeActual = frases[fraseIndex];
     let gotas = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
@@ -55,22 +56,20 @@
     let borrarHasta = null;
     let esperando = false;
     let tiempoEspera = 0;
+    let finalizado = false;
     let borrandoFinal = false;
-
-    // 🎨 Colores más intensos para frases y partículas
-    let coloresTexto = ["#ff007f", "#ff0055", "#ff00aa", "#ff1493", "#ff33cc"];
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
 
-    let fuegos = [];
-
     function setup() {
       createCanvas(windowWidth, windowHeight);
       textSize(26);
       textAlign(CENTER, CENTER);
+      textFont('Poppins');
     }
 
     function windowResized() {
@@ -80,29 +79,29 @@
     function mousePressed() {
       if (!mostrarDedicatoria) {
         clickCount++;
-
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
-          mensajeActual = frases[fraseIndex];
-
           for (let g of gotas) {
-            g.texto = mensajeActual;
+            g.texto = frases[fraseIndex];
           }
         }
-
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
+        // Explosión
         for (let i = 0; i < 20; i++) {
-          fuegos.push({
+          let ang = random(TWO_PI);
+          let speed = random(2, 6);
+          gotas.push({
             x: mouseX,
             y: mouseY,
-            vx: random(-3, 3),
-            vy: random(-3, 3),
+            dx: cos(ang) * speed,
+            dy: sin(ang) * speed,
+            texto: frases[fraseIndex],
             alpha: 255,
-            color: random(coloresTexto)
+            explosion: true
           });
         }
       }
@@ -111,45 +110,52 @@
     function draw() {
       background(0, 100);
 
+      // Mostrar contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      for (let i = fuegos.length - 1; i >= 0; i--) {
-        let p = fuegos[i];
-        fill(p.color + hex(p.alpha, 2));
-        circle(p.x, p.y, 5);
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 5;
-        if (p.alpha <= 0) fuegos.splice(i, 1);
-      }
-
+      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
-        textSize(28);
-
+        textSize(24);
         if (frameCount % 8 === 0) {
-          let x = random(100, width - 100);
-          let y = -50;
-          let speed = random(1.5, 3);
-          let color = random(coloresTexto);
-          gotas.push({ x, y, speed, alpha: 255, texto: mensajeActual, color });
+          let x = random(width);
+          let y = -30;
+          let speed = random(2, 4);
+          gotas.push({
+            x: x,
+            y: y,
+            speed: speed,
+            alpha: 255,
+            texto: frases[fraseIndex],
+            explosion: false
+          });
         }
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          fill(g.color + hex(g.alpha, 2));
+          let color = random(coloresTexto);
+          fill(color + hex(g.alpha, 2));
           text(g.texto, g.x, g.y);
-          g.y += g.speed;
-          g.alpha -= 1.5;
+
+          if (g.explosion) {
+            g.x += g.dx;
+            g.y += g.dy;
+            g.alpha -= 5;
+          } else {
+            g.y += g.speed;
+            g.alpha -= 1.5;
+          }
+
           if (g.alpha <= 0 || g.y > height + 50) {
             gotas.splice(i, 1);
           }
         }
       }
 
+      // Dedicatoria
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
