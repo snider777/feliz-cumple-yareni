@@ -33,6 +33,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/addons/p5.sound.min.js"></script>
 </head>
 <body>
   <div id="scrollContainer">
@@ -58,18 +59,27 @@
     let tiempoEspera = 0;
     let finalizado = false;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
 
+    let cancion;
+
+    function preload() {
+      soundFormats('mp3');
+      cancion = loadSound("A-ha - Take On Me (Acoustic)  Subtitulada al Español.mp3");
+    }
+
     function setup() {
       createCanvas(windowWidth, windowHeight);
       textSize(26);
       textAlign(CENTER, CENTER);
       textFont('Poppins');
+      cancion.setVolume(0.5);
+      cancion.loop();
     }
 
     function windowResized() {
