@@ -240,10 +240,11 @@
           tiempoEscritura = millis();
         }
 
+        // 💡 Corregido aquí
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
-          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
+          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
