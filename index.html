@@ -56,7 +56,9 @@
     let esperando = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
+
+    // 🎨 Colores más intensos para frases y partículas
+    let coloresTexto = ["#ff007f", "#ff0055", "#ff00aa", "#ff1493", "#ff33cc"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -79,7 +81,6 @@
       if (!mostrarDedicatoria) {
         clickCount++;
 
-        // Cambiar frase actual y reiniciar todas las gotas
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
           mensajeActual = frases[fraseIndex];
@@ -94,7 +95,6 @@
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
-        // Crear fuegos artificiales
         for (let i = 0; i < 20; i++) {
           fuegos.push({
             x: mouseX,
@@ -111,13 +111,11 @@
     function draw() {
       background(0, 100);
 
-      // Contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Explosiones
       for (let i = fuegos.length - 1; i >= 0; i--) {
         let p = fuegos[i];
         fill(p.color + hex(p.alpha, 2));
@@ -128,7 +126,6 @@
         if (p.alpha <= 0) fuegos.splice(i, 1);
       }
 
-      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(28);
@@ -153,7 +150,6 @@
         }
       }
 
-      // Dedicatoria
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
@@ -161,7 +157,6 @@
           tiempoEscritura = millis();
         }
 
-        // Detectar texto a borrar
         for (let parte of partesABorrar) {
           if (!parte.borrado && textoVisible.includes(parte.texto)) {
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
@@ -173,13 +168,11 @@
           }
         }
 
-        // Espera antes de borrar
         if (esperando && millis() - tiempoEspera >= 1300) {
           borrando = true;
           esperando = false;
         }
 
-        // Borrar letra por letra
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
@@ -188,7 +181,6 @@
           }
         }
 
-        // Iniciar borrado final
         if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
           mensajeFinalizado = true;
           setTimeout(() => {
@@ -197,13 +189,11 @@
           }, 1000);
         }
 
-        // Borrado final hacia adelante
         if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.substring(1);
           tiempoEscritura = millis();
         }
 
-        // Mostrar texto dedicatoria
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
