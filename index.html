@@ -37,6 +37,13 @@
   <div id="scrollContainer">
     <div id="dedicatoria"></div>
   </div>
+
+  <!-- AUDIO -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="take-on-me.mp3" type="audio/mp3">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+
   <script>
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
@@ -44,6 +51,7 @@
     let gotas = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
+    let musicaIniciada = false;
 
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
@@ -76,6 +84,13 @@
     }
 
     function mousePressed() {
+      // Iniciar la música al primer clic (si no ha empezado)
+      if (!musicaIniciada) {
+        let audio = document.getElementById("bgMusic");
+        audio.play();
+        musicaIniciada = true;
+      }
+
       if (!mostrarDedicatoria) {
         clickCount++;
         if (clickCount % 2 === 0) {
