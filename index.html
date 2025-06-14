@@ -42,8 +42,10 @@
     let fraseIndex = 0;
     let mensajeActual = frases[fraseIndex];
     let gotas = [];
+    let fuegos = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
+    let coloresFrases = ["#b266ff", "#ff99cc", "#ff1a1a"];
 
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
@@ -77,7 +79,7 @@
     function mousePressed() {
       if (!mostrarDedicatoria) {
         clickCount++;
-        if (clickCount % 5 === 0) {
+        if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
           mensajeActual = frases[fraseIndex];
         }
@@ -85,37 +87,68 @@
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
+
+        // Crear fuegos artificiales al hacer clic
+        for (let i = 0; i < 80; i++) {
+          fuegos.push({
+            x: mouseX,
+            y: mouseY,
+            angle: random(TWO_PI),
+            speed: random(2, 6),
+            alpha: 255,
+            color: random(coloresFrases)
+          });
+        }
       }
     }
 
     function draw() {
       background(0, 100);
 
-      // Mostrar contador
+      // Contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia antes de la dedicatoria
+      // Lluvia de frases
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(28);
-        if (frameCount % 5 === 0) {
-          let x = random(width);
-          let y = -50;
-          let speed = random(2, 6);
-          gotas.push({ x, y, speed, alpha: 255 });
+        if (frameCount % 3 === 0) { // MÁS frases
+          for (let i = 0; i < 3; i++) {
+            let x = random(width);
+            let y = -50;
+            let speed = random(2, 6);
+            let color = random(coloresFrases);
+            gotas.push({ x, y, speed, alpha: 255, color });
+          }
         }
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          fill(random(200, 255), random(100, 150), random(200, 255), g.alpha);
+          fill(g.color + hex(floor(g.alpha), 2));
           text(mensajeActual, g.x, g.y);
           g.y += g.speed;
-          g.alpha -= 1.5;
+          g.alpha -= 2;
           if (g.alpha <= 0 || g.y > height + 50) {
             gotas.splice(i, 1);
+          }
+        }
+
+        // Dibujar fuegos artificiales
+        for (let i = fuegos.length - 1; i >= 0; i--) {
+          let f = fuegos[i];
+          let vx = cos(f.angle) * f.speed;
+          let vy = sin(f.angle) * f.speed;
+          f.x += vx;
+          f.y += vy;
+          f.alpha -= 4;
+          fill(f.color + hex(floor(f.alpha), 2));
+          noStroke();
+          ellipse(f.x, f.y, 4);
+          if (f.alpha <= 0) {
+            fuegos.splice(i, 1);
           }
         }
       }
@@ -128,7 +161,6 @@
           tiempoEscritura = millis();
         }
 
-        // Detectar texto a borrar
         for (let parte of partesABorrar) {
           if (!parte.borrado && textoVisible.includes(parte.texto)) {
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
@@ -140,13 +172,11 @@
           }
         }
 
-        // Esperar 3 segundos antes de borrar
         if (esperando && millis() - tiempoEspera >= 3000) {
           borrando = true;
           esperando = false;
         }
 
-        // Borrar letra por letra hacia atrás
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
@@ -155,7 +185,6 @@
           }
         }
 
-        // Iniciar borrado final cuando se termina todo
         if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
           mensajeFinalizado = true;
           setTimeout(() => {
@@ -164,13 +193,11 @@
           }, 1000);
         }
 
-        // Borrado final hacia adelante
         if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.substring(1);
           tiempoEscritura = millis();
         }
 
-        // Mostrar texto con colores aleatorios
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
