@@ -45,7 +45,8 @@
     let fuegos = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
-    let coloresFrases = ["#b266ff", "#ff99cc", "#ff1a1a"];
+
+    let coloresDedicatoria = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
@@ -57,9 +58,7 @@
     let borrarHasta = null;
     let esperando = false;
     let tiempoEspera = 0;
-    let finalizado = false;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -88,7 +87,7 @@
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
-        // Crear fuegos artificiales al hacer clic
+        // Crear fuegos artificiales
         for (let i = 0; i < 80; i++) {
           fuegos.push({
             x: mouseX,
@@ -96,7 +95,7 @@
             angle: random(TWO_PI),
             speed: random(2, 6),
             alpha: 255,
-            color: random(coloresFrases)
+            color: random(coloresDedicatoria)
           });
         }
       }
@@ -111,23 +110,23 @@
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia de frases
+      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(28);
-        if (frameCount % 3 === 0) { // MÁS frases
+        if (frameCount % 3 === 0) {
           for (let i = 0; i < 3; i++) {
             let x = random(width);
             let y = -50;
             let speed = random(2, 6);
-            let color = random(coloresFrases);
+            let color = random(coloresDedicatoria);
             gotas.push({ x, y, speed, alpha: 255, color });
           }
         }
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          fill(g.color + hex(floor(g.alpha), 2));
+          fill(color(g.color + hex(floor(g.alpha), 2)));
           text(mensajeActual, g.x, g.y);
           g.y += g.speed;
           g.alpha -= 2;
@@ -136,7 +135,7 @@
           }
         }
 
-        // Dibujar fuegos artificiales
+        // Fuegos artificiales
         for (let i = fuegos.length - 1; i >= 0; i--) {
           let f = fuegos[i];
           let vx = cos(f.angle) * f.speed;
@@ -144,7 +143,7 @@
           f.x += vx;
           f.y += vy;
           f.alpha -= 4;
-          fill(f.color + hex(floor(f.alpha), 2));
+          fill(color(f.color + hex(floor(f.alpha), 2)));
           noStroke();
           ellipse(f.x, f.y, 4);
           if (f.alpha <= 0) {
@@ -198,9 +197,10 @@
           tiempoEscritura = millis();
         }
 
+        // Texto con efecto de colores
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
-          let color = random(coloresTexto);
+          let color = random(coloresDedicatoria);
           dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
