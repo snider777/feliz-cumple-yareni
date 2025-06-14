@@ -37,7 +37,7 @@
     <div id="dedicatoria"></div>
   </div>
   <script>
-    let frases = ["Hola Yareni :D", "Feliz cumpleaños"];
+    let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
     let fraseIndex = 0;
     let mensajeActual = frases[fraseIndex];
@@ -79,14 +79,14 @@
         clickCount++;
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
-          mensajeActual = frases[fraseIndex];
         }
+        mensajeActual = frases[fraseIndex];
+
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
-        // Fuegos artificiales
         for (let i = 0; i < 80; i++) {
           fuegos.push({
             x: mouseX,
@@ -122,11 +122,14 @@
           let g = gotas[i];
           push();
           translate(g.x, g.y);
+          let totalWidth = textWidth(g.frase);
+          let currentX = -totalWidth / 2;
           for (let j = 0; j < g.frase.length; j++) {
             let letra = g.frase[j];
-            let offsetX = textWidth(g.frase.substring(0, j)) - textWidth(g.frase) / 2;
-            fill(random(coloresDedicatoria) + hex(floor(g.alpha), 2));
-            text(letra, offsetX, 0);
+            let w = textWidth(letra);
+            fill(color(random(coloresDedicatoria) + hex(floor(g.alpha), 2)));
+            text(letra, currentX + w / 2, 0);
+            currentX += w;
           }
           pop();
 
@@ -137,7 +140,6 @@
           }
         }
 
-        // Fuegos artificiales
         for (let i = fuegos.length - 1; i >= 0; i--) {
           let f = fuegos[i];
           let vx = cos(f.angle) * f.speed;
@@ -171,7 +173,7 @@
           }
         }
 
-        if (esperando && millis() - tiempoEspera >= 3000) {
+        if (esperando && millis() - tiempoEspera >= 1300) {
           borrando = true;
           esperando = false;
         }
