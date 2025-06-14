@@ -6,6 +6,7 @@
   <title>Para Yareni</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       overflow: hidden;
@@ -13,6 +14,7 @@
       color: white;
       font-family: 'Poppins', sans-serif;
     }
+
     #scrollContainer {
       position: absolute;
       top: 0;
@@ -21,17 +23,24 @@
       height: 100vh;
       overflow-y: auto;
       pointer-events: none;
+      z-index: 10;
     }
+
     #dedicatoria {
       padding: 40px;
       font-size: 20px;
       white-space: pre-wrap;
     }
+
     canvas {
       display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
-    #startScreen {
-      position: fixed;
+
+    #inicio {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
@@ -40,21 +49,24 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      flex-direction: column;
+      z-index: 100;
     }
-    #startButton {
-      padding: 20px 40px;
+
+    #empezarBtn {
+      padding: 20px 50px;
       font-size: 24px;
-      font-weight: bold;
       border: none;
-      cursor: pointer;
-      border-radius: 12px;
+      border-radius: 15px;
       color: white;
-      background: linear-gradient(45deg, #ff80ff, #ff4da6, #ff00ff);
+      font-weight: bold;
+      background: linear-gradient(45deg, #ff4da6, #ff00ff, #ff8080);
       background-size: 300% 300%;
-      animation: shimmer 3s infinite;
+      animation: prism 3s ease infinite;
+      cursor: pointer;
     }
-    @keyframes shimmer {
+
+    @keyframes prism {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
@@ -63,20 +75,22 @@
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
 </head>
 <body>
-  <div id="startScreen">
-    <button id="startButton">EMPEZAR</button>
+
+  <div id="inicio">
+    <button id="empezarBtn">EMPEZAR</button>
   </div>
+
   <div id="scrollContainer">
     <div id="dedicatoria"></div>
   </div>
+
   <script>
+    let gotas = [];
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
     let fraseIndex = 0;
-    let gotas = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
-    let musica;
 
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
@@ -91,17 +105,17 @@
     let finalizado = false;
     let borrandoFinal = false;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
-
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
 
+    let musica;
     let particulas = [];
-    let iniciado = false;
+    let inicioActivo = true;
 
     function preload() {
-      musica = loadSound("take-on-me.mp3");
+      musica = loadSound('take-on-me.mp3');
     }
 
     function setup() {
@@ -109,38 +123,37 @@
       textSize(26);
       textAlign(CENTER, CENTER);
       textFont('Poppins');
-      for (let i = 0; i < 100; i++) {
+
+      // partículas fondo inicial
+      for (let i = 0; i < 150; i++) {
         particulas.push({
           x: random(width),
           y: random(height),
-          r: random(2, 4),
-          speed: random(0.5, 2),
+          size: random(1, 4),
+          speed: random(0.2, 1),
           color: random(coloresTexto)
         });
       }
-      noLoop();
-    }
 
-    document.getElementById("startButton").addEventListener("click", () => {
-      document.getElementById("startScreen").style.display = "none";
-      musica.loop();
-      iniciado = true;
-      loop();
-    });
+      document.getElementById("empezarBtn").addEventListener("click", () => {
+        document.getElementById("inicio").style.display = "none";
+        inicioActivo = false;
+        musica.loop();
+      });
+    }
 
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
     }
 
     function mousePressed() {
-      if (!mostrarDedicatoria && iniciado) {
+      if (!mostrarDedicatoria && !inicioActivo) {
         clickCount++;
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
-          for (let g of gotas) {
-            g.texto = frases[fraseIndex];
-          }
+          for (let g of gotas) g.texto = frases[fraseIndex];
         }
+
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
@@ -163,30 +176,28 @@
     }
 
     function draw() {
-      background(0);
+      background(0, 100);
 
-      // Fondo de partículas
-      for (let p of particulas) {
-        fill(p.color);
-        noStroke();
-        circle(p.x, p.y, p.r);
-        p.y += p.speed;
-        if (p.y > height) {
-          p.y = 0;
-          p.x = random(width);
+      if (inicioActivo) {
+        for (let p of particulas) {
+          fill(p.color);
+          noStroke();
+          ellipse(p.x, p.y, p.size);
+          p.y += p.speed;
+          if (p.y > height) {
+            p.y = 0;
+            p.x = random(width);
+          }
         }
+        return;
       }
 
-      // Contador
-      if (iniciado && !borrandoFinal) {
-        fill(255);
-        textSize(20);
-        textAlign(LEFT, TOP);
-        text("Clics: " + clickCount, 20, 20);
-      }
+      fill(255);
+      textSize(20);
+      textAlign(LEFT, TOP);
+      text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia
-      if (!mostrarDedicatoria && iniciado) {
+      if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
         if (frameCount % 8 === 0) {
@@ -208,7 +219,6 @@
           let color = random(coloresTexto);
           fill(color + hex(g.alpha, 2));
           text(g.texto, g.x, g.y);
-
           if (g.explosion) {
             g.x += g.dx;
             g.y += g.dy;
@@ -217,14 +227,12 @@
             g.y += g.speed;
             g.alpha -= 1.5;
           }
-
           if (g.alpha <= 0 || g.y > height + 50) {
             gotas.splice(i, 1);
           }
         }
       }
 
-      // Dedicatoria
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
