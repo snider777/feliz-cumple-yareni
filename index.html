@@ -21,7 +21,6 @@
       height: 100vh;
       overflow-y: auto;
       pointer-events: none;
-      z-index: 1;
     }
     #dedicatoria {
       padding: 40px;
@@ -30,85 +29,49 @@
     }
     canvas {
       display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-    #startButton {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 20px 40px;
-      font-size: 24px;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      z-index: 2;
-      background: linear-gradient(45deg, #ff4da6, #ff00ff, #ff8080, #ff4da6);
-      background-size: 600% 600%;
-      animation: prism 5s ease infinite;
-    }
-    @keyframes prism {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
 </head>
 <body>
-  <button id="startButton">EMPEZAR</button>
+  <audio id="bgMusic" src="take-on-me.mp3" preload="auto"></audio>
   <div id="scrollContainer">
     <div id="dedicatoria"></div>
   </div>
-
   <script>
-    let gotas = [], particulas = [], frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
-    let clickCount = 0, fraseIndex = 0;
-    let mostrarDedicatoria = false, mensajeFinalizado = false, borrandoFinal = false;
+    let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
+    let clickCount = 0;
+    let fraseIndex = 0;
+    let gotas = [];
+    let mostrarDedicatoria = false;
+    let mensajeFinalizado = false;
+    let musicaIniciada = false;
+
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
-    let textoVisible = "", indexLetra = 0, tiempoEscritura = 0, velocidadEscritura = 100;
-    let borrando = false, borrarDesde = null, esperando = false, tiempoEspera = 0;
-    let cancion, iniciado = false;
+    let textoVisible = "";
+    let indexLetra = 0;
+    let tiempoEscritura = 0;
+    let velocidadEscritura = 100;
+    let borrando = false;
+    let borrarDesde = null;
+    let esperando = false;
+    let tiempoEspera = 0;
+    let borrandoFinal = false;
+    let mensajeTerminado = false;
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
 
-    function preload() {
-      soundFormats('mp3');
-      cancion = loadSound('take-on-me.mp3');
-    }
+    let particulas = [];
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      textFont('Poppins');
+      textSize(26);
       textAlign(CENTER, CENTER);
-      textSize(24);
-
-      for (let i = 0; i < 100; i++) {
-        particulas.push({
-          x: random(width),
-          y: random(height),
-          speed: random(0.3, 1.5),
-          color: random(coloresTexto),
-          size: random(2, 4)
-        });
-      }
-
-      document.getElementById("startButton").addEventListener("click", () => {
-        userStartAudio();
-        cancion.play();
-        iniciado = true;
-        document.getElementById("startButton").style.display = "none";
-        document.getElementById("scrollContainer").style.pointerEvents = "auto";
-      });
+      textFont('Poppins');
     }
 
     function windowResized() {
@@ -116,62 +79,106 @@
     }
 
     function mousePressed() {
-      if (!iniciado || mostrarDedicatoria) return;
-
-      clickCount++;
-      if (clickCount % 2 === 0) {
-        fraseIndex = (fraseIndex + 1) % frases.length;
-        for (let g of gotas) g.texto = frases[fraseIndex];
+      if (!musicaIniciada) {
+        let audio = document.getElementById("bgMusic");
+        audio.play();
+        musicaIniciada = true;
       }
-      if (clickCount >= 30) mostrarDedicatoria = true;
 
-      for (let i = 0; i < 20; i++) {
-        let ang = random(TWO_PI), speed = random(2, 6);
-        gotas.push({
-          x: mouseX, y: mouseY,
-          dx: cos(ang) * speed,
-          dy: sin(ang) * speed,
-          texto: frases[fraseIndex],
-          alpha: 255, explosion: true
+      if (!mostrarDedicatoria) {
+        clickCount++;
+        if (clickCount % 2 === 0) {
+          fraseIndex = (fraseIndex + 1) % frases.length;
+          for (let g of gotas) {
+            g.texto = frases[fraseIndex];
+          }
+        }
+        if (clickCount >= 30) {
+          mostrarDedicatoria = true;
+          document.getElementById("scrollContainer").style.pointerEvents = "auto";
+          crearParticulas();
+        }
+
+        for (let i = 0; i < 20; i++) {
+          let ang = random(TWO_PI);
+          let speed = random(2, 6);
+          gotas.push({
+            x: mouseX,
+            y: mouseY,
+            dx: cos(ang) * speed,
+            dy: sin(ang) * speed,
+            texto: frases[fraseIndex],
+            alpha: 255,
+            explosion: true
+          });
+        }
+      }
+    }
+
+    function crearParticulas() {
+      for (let i = 0; i < 100; i++) {
+        particulas.push({
+          x: random(width),
+          y: random(height),
+          dx: random(-0.3, 0.3),
+          dy: random(-0.3, 0.3),
+          size: random(2, 4),
+          alpha: random(150, 255),
+          color: random(coloresTexto)
         });
+      }
+    }
+
+    function moverYdibujarParticulas() {
+      for (let p of particulas) {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0 || p.x > width) p.dx *= -1;
+        if (p.y < 0 || p.y > height) p.dy *= -1;
+
+        fill(p.color + hex(p.alpha, 2));
+        noStroke();
+        ellipse(p.x, p.y, p.size);
       }
     }
 
     function draw() {
       background(0, 100);
 
-      // Fondo de partículas
-      for (let p of particulas) {
-        fill(p.color);
-        noStroke();
-        circle(p.x, p.y, p.size);
-        p.y += p.speed;
-        if (p.y > height) {
-          p.y = 0;
-          p.x = random(width);
-        }
+      // Fondo de partículas si estamos en dedicatoria
+      if (mostrarDedicatoria) {
+        moverYdibujarParticulas();
       }
 
-      if (!iniciado) return;
-
-      // Mostrar contador
+      // Contador de clics
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia
+      // Lluvia de frases
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
         if (frameCount % 8 === 0) {
-          let x = random(width), y = -30, speed = random(2, 4);
-          gotas.push({ x, y, speed, alpha: 255, texto: frases[fraseIndex], explosion: false });
+          let x = random(width);
+          let y = -30;
+          let speed = random(2, 4);
+          gotas.push({
+            x: x,
+            y: y,
+            speed: speed,
+            alpha: 255,
+            texto: frases[fraseIndex],
+            explosion: false
+          });
         }
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          fill(random(coloresTexto) + hex(g.alpha, 2));
+          let color = random(coloresTexto);
+          fill(color + hex(g.alpha, 2));
           text(g.texto, g.x, g.y);
 
           if (g.explosion) {
@@ -183,11 +190,13 @@
             g.alpha -= 1.5;
           }
 
-          if (g.alpha <= 0 || g.y > height + 50) gotas.splice(i, 1);
+          if (g.alpha <= 0 || g.y > height + 50) {
+            gotas.splice(i, 1);
+          }
         }
       }
 
-      // Dedicatoria
+      // Dedicatoria con máquina de escribir y borrado
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
@@ -213,7 +222,9 @@
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
-          if (textoVisible.length <= borrarDesde) borrando = false;
+          if (textoVisible.length <= borrarDesde) {
+            borrando = false;
+          }
         }
 
         if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
@@ -231,7 +242,8 @@
 
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
-          dedicatoriaHTML += `<span style="color:${random(coloresTexto)}">${c}</span>`;
+          let color = random(coloresTexto);
+          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
