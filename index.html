@@ -77,11 +77,11 @@
     function mousePressed() {
       if (!mostrarDedicatoria) {
         clickCount++;
-        if (clickCount % 2 === 0) {
-          fraseIndex = (fraseIndex + 1) % frases.length;
-        }
-        mensajeActual = frases[fraseIndex];
-
+       if (clickCount % 2 === 0) {
+  fraseIndex = (fraseIndex + 1) % frases.length;
+  mensajeActual = frases[fraseIndex];
+  gotas = []; // Limpia las gotas anteriores
+}
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
