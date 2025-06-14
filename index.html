@@ -30,29 +30,13 @@
     canvas {
       display: block;
     }
-    #botonPlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 20px 40px;
-      background: #ff4da6;
-      color: white;
-      font-size: 20px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      z-index: 10;
-    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
 </head>
 <body>
-  <button id="botonPlay">Empezar</button>
   <div id="scrollContainer">
     <div id="dedicatoria"></div>
   </div>
-
   <script>
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
@@ -73,32 +57,18 @@
     let tiempoEspera = 0;
     let finalizado = false;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
 
-    let musica;
-
-    function preload() {
-      musica = loadSound('take-on-me.mp3');
-    }
-
     function setup() {
-      noLoop();
       createCanvas(windowWidth, windowHeight);
       textSize(26);
       textAlign(CENTER, CENTER);
       textFont('Poppins');
-
-      document.getElementById("botonPlay").addEventListener("click", () => {
-        musica.setVolume(0.4);
-        musica.loop();
-        document.getElementById("botonPlay").remove();
-        loop();
-      });
     }
 
     function windowResized() {
@@ -119,6 +89,7 @@
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
+        // Explosión
         for (let i = 0; i < 20; i++) {
           let ang = random(TWO_PI);
           let speed = random(2, 6);
@@ -138,11 +109,13 @@
     function draw() {
       background(0, 100);
 
+      // Mostrar contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
+      // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
@@ -181,6 +154,7 @@
         }
       }
 
+      // Dedicatoria
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
