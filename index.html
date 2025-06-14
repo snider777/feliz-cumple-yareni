@@ -28,26 +28,16 @@
       font-family: 'Poppins', sans-serif;
       white-space: pre-wrap;
     }
-    #botonInicio {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 15px 30px;
-      font-size: 20px;
-      font-weight: bold;
-      background-color: #ff4da6;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      z-index: 1000;
-    }
     canvas {
       display: block;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js"></script>
+</head>
+<body>
+  <div id="scrollContainer">
+    <div id="dedicatoria"></div>
+  </div>
   <script>
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
     let clickCount = 0;
@@ -55,8 +45,6 @@
     let gotas = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
-    let cancion;
-    let boton;
 
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te haya gustado el código que te hice :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá tener la oportunidad de conocernos más muy pronto ... Atte Caleb ... Por cierto hace mucho que no hacía una carta o algo de ese estilo ...";
     let textoVisible = "";
@@ -68,6 +56,7 @@
     let borrarHasta = null;
     let esperando = false;
     let tiempoEspera = 0;
+    let finalizado = false;
     let borrandoFinal = false;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
@@ -76,27 +65,11 @@
       { texto: "Se te extraña", borrado: false }
     ];
 
-    function preload() {
-      cancion = loadSound("take-on-me.mp3");
-    }
-
     function setup() {
       createCanvas(windowWidth, windowHeight);
       textSize(26);
       textAlign(CENTER, CENTER);
       textFont('Poppins');
-
-      boton = createButton("Empezar");
-      boton.id("botonInicio");
-      boton.mousePressed(iniciarTodo);
-      document.body.appendChild(boton.elt);
-    }
-
-    function iniciarTodo() {
-      if (!cancion.isPlaying()) {
-        cancion.loop();
-      }
-      boton.remove();
     }
 
     function windowResized() {
@@ -137,6 +110,7 @@
     function draw() {
       background(0, 100);
 
+      // Mostrar contador
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
@@ -229,16 +203,11 @@
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
-          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
+          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
     }
   </script>
-</head>
-<body>
-  <div id="scrollContainer">
-    <div id="dedicatoria"></div>
-  </div>
 </body>
 </html>
