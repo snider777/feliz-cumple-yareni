@@ -42,7 +42,6 @@
     let fraseIndex = 0;
     let mensajeActual = frases[fraseIndex];
     let gotas = [];
-    let explosiones = [];
     let mostrarDedicatoria = false;
     let mensajeFinalizado = false;
 
@@ -56,7 +55,6 @@
     let borrarHasta = null;
     let esperando = false;
     let tiempoEspera = 0;
-    let finalizado = false;
     let borrandoFinal = false;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
@@ -64,6 +62,8 @@
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
+
+    let fuegos = [];
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
@@ -78,33 +78,33 @@
     function mousePressed() {
       if (!mostrarDedicatoria) {
         clickCount++;
+
+        // Cambiar frase actual y reiniciar todas las gotas
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
           mensajeActual = frases[fraseIndex];
 
-          // Actualizar todas las gotas con el nuevo mensaje
           for (let g of gotas) {
             g.texto = mensajeActual;
           }
         }
+
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
         }
 
-        // Crear explosión tipo fuegos artificiales
-        let particulas = [];
-        for (let i = 0; i < 30; i++) {
-          particulas.push({
+        // Crear fuegos artificiales
+        for (let i = 0; i < 20; i++) {
+          fuegos.push({
             x: mouseX,
             y: mouseY,
-            angle: random(TWO_PI),
-            speed: random(2, 6),
+            vx: random(-3, 3),
+            vy: random(-3, 3),
             alpha: 255,
-            size: random(4, 8)
+            color: random(coloresTexto)
           });
         }
-        explosiones.push(particulas);
       }
     }
 
@@ -117,53 +117,38 @@
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
+      // Explosiones
+      for (let i = fuegos.length - 1; i >= 0; i--) {
+        let p = fuegos[i];
+        fill(p.color + hex(p.alpha, 2));
+        circle(p.x, p.y, 5);
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 5;
+        if (p.alpha <= 0) fuegos.splice(i, 1);
+      }
+
       // Lluvia
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(28);
 
-        if (frameCount % 5 === 0) {
-          let x = random(width);
+        if (frameCount % 8 === 0) {
+          let x = random(100, width - 100);
           let y = -50;
-          let speed = random(2, 6);
-          gotas.push({ x, y, speed, alpha: 255, texto: mensajeActual });
+          let speed = random(1.5, 3);
+          let color = random(coloresTexto);
+          gotas.push({ x, y, speed, alpha: 255, texto: mensajeActual, color });
         }
 
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
-          let txt = g.texto;
-          let totalWidth = textWidth(txt);
-
-          // Dibujar cada letra con color distinto
-          let startX = g.x - totalWidth / 2;
-          for (let j = 0; j < txt.length; j++) {
-            let letra = txt[j];
-            let color = random(coloresTexto);
-            fill(color + hex(g.alpha, 2));
-            text(letra, startX + textWidth(txt.slice(0, j)), g.y);
-          }
-
+          fill(g.color + hex(g.alpha, 2));
+          text(g.texto, g.x, g.y);
           g.y += g.speed;
           g.alpha -= 1.5;
           if (g.alpha <= 0 || g.y > height + 50) {
             gotas.splice(i, 1);
-          }
-        }
-
-        // Explosiones
-        for (let e = explosiones.length - 1; e >= 0; e--) {
-          let particulas = explosiones[e];
-          for (let p of particulas) {
-            let color = random(coloresTexto);
-            fill(color + hex(p.alpha, 2));
-            noStroke();
-            ellipse(p.x, p.y, p.size);
-            p.x += cos(p.angle) * p.speed;
-            p.y += sin(p.angle) * p.speed;
-            p.alpha -= 5;
-          }
-          if (particulas.every(p => p.alpha <= 0)) {
-            explosiones.splice(e, 1);
           }
         }
       }
@@ -176,6 +161,7 @@
           tiempoEscritura = millis();
         }
 
+        // Detectar texto a borrar
         for (let parte of partesABorrar) {
           if (!parte.borrado && textoVisible.includes(parte.texto)) {
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
@@ -187,11 +173,13 @@
           }
         }
 
-        if (esperando && millis() - tiempoEspera >= 3000) {
+        // Espera antes de borrar
+        if (esperando && millis() - tiempoEspera >= 1300) {
           borrando = true;
           esperando = false;
         }
 
+        // Borrar letra por letra
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
@@ -200,6 +188,7 @@
           }
         }
 
+        // Iniciar borrado final
         if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
           mensajeFinalizado = true;
           setTimeout(() => {
@@ -208,11 +197,13 @@
           }, 1000);
         }
 
+        // Borrado final hacia adelante
         if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.substring(1);
           tiempoEscritura = millis();
         }
 
+        // Mostrar texto dedicatoria
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
