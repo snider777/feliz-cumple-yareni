@@ -58,7 +58,8 @@
     let tiempoEspera = 0;
     let borrandoFinal = false;
     let mensajeTerminado = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
+    let pausaPorPuntuacion = false;
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -146,18 +147,15 @@
     function draw() {
       background(0, 100);
 
-      // Fondo de partículas si estamos en dedicatoria
       if (mostrarDedicatoria) {
         moverYdibujarParticulas();
       }
 
-      // Contador de clics
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia de frases
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
@@ -196,12 +194,32 @@
         }
       }
 
-      // Dedicatoria con máquina de escribir y borrado
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
-          textoVisible += textoBase[indexLetra];
-          indexLetra++;
-          tiempoEscritura = millis();
+          let siguiente = textoBase.slice(indexLetra, indexLetra + 3);
+
+          if ((siguiente === "..." || textoBase[indexLetra] === ",") && !pausaPorPuntuacion) {
+            esperando = true;
+            pausaPorPuntuacion = true;
+            tiempoEspera = millis();
+            return;
+          }
+
+          if (esperando && millis() - tiempoEspera >= 500) {
+            esperando = false;
+          }
+
+          if (!esperando) {
+            if (siguiente === "...") {
+              textoVisible += "...";
+              indexLetra += 3;
+            } else {
+              textoVisible += textoBase[indexLetra];
+              indexLetra++;
+            }
+            tiempoEscritura = millis();
+            pausaPorPuntuacion = false;
+          }
         }
 
         for (let parte of partesABorrar) {
@@ -214,7 +232,7 @@
           }
         }
 
-        if (esperando && millis() - tiempoEspera >= 1300) {
+        if (esperando && millis() - tiempoEspera >= 1300 && !borrando && !pausaPorPuntuacion) {
           borrando = true;
           esperando = false;
         }
@@ -240,7 +258,6 @@
           tiempoEscritura = millis();
         }
 
-        // 💡 Corregido aquí
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
