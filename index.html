@@ -57,7 +57,7 @@
     let esperando = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -198,7 +198,7 @@
         }
       }
 
-      // Dedicatoria con máquina de escribir y borrado y cambio dinámico de color indefinido
+      // Dedicatoria con máquina de escribir y cambio dinámico de color indefinido, sin borrado
       if (mostrarDedicatoria) {
         if (!borrandoFinal && !borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
@@ -229,18 +229,19 @@
           }
         }
 
-        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
-          mensajeFinalizado = true;
-          setTimeout(() => {
-            borrandoFinal = true;
-            indexLetra = textoVisible.length;
-          }, 1000);
-        }
-
-        if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
-          textoVisible = textoVisible.substring(1);
-          tiempoEscritura = millis();
-        }
+        // Elimina el borrado final para que la dedicatoria no desaparezca
+        // if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
+        //   mensajeFinalizado = true;
+        //   setTimeout(() => {
+        //     borrandoFinal = true;
+        //     indexLetra = textoVisible.length;
+        //   }, 1000);
+        // }
+        //
+        // if (borrandoFinal && millis() - tiempoEscritura > velocidadEscritura) {
+        //   textoVisible = textoVisible.substring(1);
+        //   tiempoEscritura = millis();
+        // }
 
         // Aseguramos que el array coloresPorLetra tenga la longitud correcta
         while (coloresPorLetra.length < textoVisible.length) {
@@ -250,8 +251,8 @@
           coloresPorLetra.pop();
         }
 
-        // Cambiamos el color de cada letra cada 10 frames para efecto dinámico indefinido
-        if (frameCount % 10 === 0) {
+        // Cambiamos el color de cada letra cada 4 frames para efecto más rápido
+        if (frameCount % 4 === 0) {
           for (let i = 0; i < coloresPorLetra.length; i++) {
             coloresPorLetra[i] = random(coloresTexto);
           }
