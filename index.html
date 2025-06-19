@@ -57,7 +57,6 @@
     let esperando = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
-    let mensajeTerminado = false;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
@@ -199,9 +198,9 @@
         }
       }
 
-      // Dedicatoria con máquina de escribir y borrado y cambio dinámico de color
-      if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+      // Dedicatoria con máquina de escribir y borrado y cambio dinámico de color indefinido
+      if (mostrarDedicatoria) {
+        if (!borrandoFinal && !borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
           indexLetra++;
           tiempoEscritura = millis();
@@ -243,7 +242,7 @@
           tiempoEscritura = millis();
         }
 
-        // Actualiza el array de colores para que coincida con la longitud del texto visible
+        // Aseguramos que el array coloresPorLetra tenga la longitud correcta
         while (coloresPorLetra.length < textoVisible.length) {
           coloresPorLetra.push(random(coloresTexto));
         }
@@ -251,12 +250,14 @@
           coloresPorLetra.pop();
         }
 
-        // Cambia el color de cada letra en cada frame para efecto dinámico
-        for (let i = 0; i < coloresPorLetra.length; i++) {
-          coloresPorLetra[i] = random(coloresTexto);
+        // Cambiamos el color de cada letra cada 10 frames para efecto dinámico indefinido
+        if (frameCount % 10 === 0) {
+          for (let i = 0; i < coloresPorLetra.length; i++) {
+            coloresPorLetra[i] = random(coloresTexto);
+          }
         }
 
-        // Renderiza la dedicatoria con colores dinámicos
+        // Renderizamos la dedicatoria con colores dinámicos
         let dedicatoriaHTML = "";
         for (let i = 0; i < textoVisible.length; i++) {
           dedicatoriaHTML += `<span style="color:${coloresPorLetra[i]}">${textoVisible[i]}</span>`;
