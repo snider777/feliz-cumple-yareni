@@ -40,28 +40,22 @@
   </div>
   <script>
     let frases = ["Hola Yareni ;)", "Feliz cumpleaños"];
-    let clickCount = 0;
-    let fraseIndex = 0;
-    let gotas = [];
-    let mostrarDedicatoria = false;
-    let mensajeFinalizado = false;
-    let musicaIniciada = false;
+    let clickCount = 0, fraseIndex = 0, gotas = [];
+    let mostrarDedicatoria = false, musicaIniciada = false;
+    let mensajeFinalizado = false, mensajeTerminado = false;
 
-    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastante bien :) ... Se te quiere, Se te extraña ,... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Pero en fin, yo me despido y espero la pases bien en este día que es tan especial para ti :D, tu amigo Caleb ;)...";
+    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastante bien :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Pero en fin, yo me despido y espero la pases bien en este día que es tan especial para ti :D, tu amigo Caleb ;)...";
+
     let textoVisible = "";
-    let indexLetra = 0;
-    let tiempoEscritura = 0;
-    let velocidadEscritura = 100;
-    let borrando = false;
-    let borrarDesde = null;
-    let esperando = false;
-    let tiempoEspera = 0;
+    let indexLetra = 0, tiempoEscritura = 0, velocidadEscritura = 100;
+    let borrando = false, borrarDesde = null;
     let borrandoFinal = false;
+
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
-      { texto: "Se te quiere", borrado: false },
-      { texto: "Se te extraña", borrado: false }
+      { texto: "Se te quiere", borrado: false, esperando: false, tiempo: 0 },
+      { texto: "Se te extraña", borrado: false, esperando: false, tiempo: 0 }
     ];
 
     let particulas = [];
@@ -89,7 +83,6 @@
           fraseIndex = (fraseIndex + 1) % frases.length;
           for (let g of gotas) g.texto = frases[fraseIndex];
         }
-
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
@@ -170,26 +163,24 @@
         }
       }
 
-      if (mostrarDedicatoria && !borrandoFinal) {
+      if (mostrarDedicatoria) {
         if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
-          textoVisible += textoBase[indexLetra];
-          indexLetra++;
+          textoVisible += textoBase[indexLetra++];
           tiempoEscritura = millis();
         }
 
         for (let parte of partesABorrar) {
-          if (!parte.borrado && textoVisible.includes(parte.texto)) {
+          if (!parte.borrado && !parte.esperando && textoVisible.includes(parte.texto)) {
+            parte.tiempo = millis();
+            parte.esperando = true;
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
-            esperando = true;
-            tiempoEspera = millis();
+          }
+          if (parte.esperando && millis() - parte.tiempo >= 500) {
             parte.borrado = true;
+            parte.esperando = false;
+            borrando = true;
             break;
           }
-        }
-
-        if (esperando && millis() - tiempoEspera >= 1300) {
-          borrando = true;
-          esperando = false;
         }
 
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
@@ -200,7 +191,7 @@
           }
         }
 
-        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
+        if (!borrando && indexLetra >= textoBase.length && !mensajeFinalizado) {
           mensajeFinalizado = true;
           setTimeout(() => {
             borrandoFinal = true;
@@ -212,14 +203,11 @@
           textoVisible = textoVisible.substring(1);
           tiempoEscritura = millis();
         }
-      }
 
-      // Este bloque asegura que el texto siga animándose con colores siempre
-      if (mostrarDedicatoria) {
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
-          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
+          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
