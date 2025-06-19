@@ -47,25 +47,23 @@
     let mensajeFinalizado = false;
     let musicaIniciada = false;
 
-    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastante bien :) ... Se te quiere, Se te extraña ,... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Pero en fin, yo me despido y espero la pases bien en este día que es tan especial para ti :D, tu amigo Caleb ;)...";
     let textoVisible = "";
+    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastabte bien :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Espero de corazón la pases muy bien en este maravilloso día que debe de ser muy especial para ti y tu familia ... Sin más que decir se depide tu amigo Caleb :D";
     let indexLetra = 0;
     let tiempoEscritura = 0;
     let velocidadEscritura = 100;
-    let pausaActiva = false;
-    let pausaTipo = null;
-    let pausaInicio = 0;
+    let borrando = false;
+    let borrarDesde = null;
+    let esperando = false;
+    let tiempoEspera = 0;
     let borrandoFinal = false;
     let mensajeTerminado = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
       { texto: "Se te extraña", borrado: false }
     ];
-    let borrandoParte = null;
-    let inicioEsperaBorrado = 0;
-    let esperandoBorrado = false;
 
     let particulas = [];
 
@@ -82,24 +80,37 @@
 
     function mousePressed() {
       if (!musicaIniciada) {
-        document.getElementById("bgMusic").play();
+        let audio = document.getElementById("bgMusic");
+        audio.play();
         musicaIniciada = true;
       }
+
       if (!mostrarDedicatoria) {
         clickCount++;
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
-          for (let g of gotas) g.texto = frases[fraseIndex];
+          for (let g of gotas) {
+            g.texto = frases[fraseIndex];
+          }
         }
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
           crearParticulas();
         }
+
         for (let i = 0; i < 20; i++) {
           let ang = random(TWO_PI);
           let speed = random(2, 6);
-          gotas.push({ x: mouseX, y: mouseY, dx: cos(ang)*speed, dy: sin(ang)*speed, texto: frases[fraseIndex], alpha: 255, explosion: true });
+          gotas.push({
+            x: mouseX,
+            y: mouseY,
+            dx: cos(ang) * speed,
+            dy: sin(ang) * speed,
+            texto: frases[fraseIndex],
+            alpha: 255,
+            explosion: true
+          });
         }
       }
     }
@@ -107,8 +118,10 @@
     function crearParticulas() {
       for (let i = 0; i < 100; i++) {
         particulas.push({
-          x: random(width), y: random(height),
-          dx: random(-0.3, 0.3), dy: random(-0.3, 0.3),
+          x: random(width),
+          y: random(height),
+          dx: random(-0.3, 0.3),
+          dy: random(-0.3, 0.3),
           size: random(2, 4),
           alpha: random(150, 255),
           color: random(coloresTexto)
@@ -120,8 +133,10 @@
       for (let p of particulas) {
         p.x += p.dx;
         p.y += p.dy;
+
         if (p.x < 0 || p.x > width) p.dx *= -1;
         if (p.y < 0 || p.y > height) p.dy *= -1;
+
         fill(p.color + hex(p.alpha, 2));
         noStroke();
         ellipse(p.x, p.y, p.size);
@@ -130,13 +145,19 @@
 
     function draw() {
       background(0, 100);
-      if (mostrarDedicatoria) moverYdibujarParticulas();
 
+      // Fondo de partículas si estamos en dedicatoria
+      if (mostrarDedicatoria) {
+        moverYdibujarParticulas();
+      }
+
+      // Contador de clics
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
+      // Lluvia de frases
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
@@ -144,77 +165,70 @@
           let x = random(width);
           let y = -30;
           let speed = random(2, 4);
-          gotas.push({ x, y, speed, alpha: 255, texto: frases[fraseIndex], explosion: false });
+          gotas.push({
+            x: x,
+            y: y,
+            speed: speed,
+            alpha: 255,
+            texto: frases[fraseIndex],
+            explosion: false
+          });
         }
+
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
           let color = random(coloresTexto);
           fill(color + hex(g.alpha, 2));
           text(g.texto, g.x, g.y);
+
           if (g.explosion) {
-            g.x += g.dx; g.y += g.dy; g.alpha -= 5;
+            g.x += g.dx;
+            g.y += g.dy;
+            g.alpha -= 5;
           } else {
-            g.y += g.speed; g.alpha -= 1.5;
+            g.y += g.speed;
+            g.alpha -= 1.5;
           }
-          if (g.alpha <= 0 || g.y > height + 50) gotas.splice(i, 1);
+
+          if (g.alpha <= 0 || g.y > height + 50) {
+            gotas.splice(i, 1);
+          }
         }
       }
 
+      // Dedicatoria con máquina de escribir y borrado
       if (mostrarDedicatoria && !borrandoFinal) {
-        if (!pausaActiva && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
-          let siguiente = textoBase.slice(indexLetra, indexLetra + 3);
-          let actual = textoBase[indexLetra];
-          if (siguiente === "...") {
-            pausaActiva = true;
-            pausaTipo = "...";
-            pausaInicio = millis();
-            return;
-          } else if (actual === ",") {
-            pausaActiva = true;
-            pausaTipo = ",";
-            pausaInicio = millis();
-            return;
-          }
-          textoVisible += actual;
+        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+          textoVisible += textoBase[indexLetra];
           indexLetra++;
           tiempoEscritura = millis();
         }
 
-        if (pausaActiva && millis() - pausaInicio >= 500) {
-          pausaActiva = false;
-          if (pausaTipo === "...") indexLetra += 3;
-          else if (pausaTipo === ",") indexLetra++;
-          pausaTipo = null;
-          tiempoEscritura = millis();
-        }
-
-        if (!borrandoParte) {
-          for (let parte of partesABorrar) {
-            if (!parte.borrado && textoVisible.includes(parte.texto)) {
-              esperandoBorrado = true;
-              borrandoParte = parte;
-              inicioEsperaBorrado = millis();
-              break;
-            }
+        for (let parte of partesABorrar) {
+          if (!parte.borrado && textoVisible.includes(parte.texto)) {
+            borrarDesde = textoVisible.lastIndexOf(parte.texto);
+            esperando = true;
+            tiempoEspera = millis();
+            parte.borrado = true;
+            break;
           }
         }
 
-        if (esperandoBorrado && millis() - inicioEsperaBorrado >= 1300) {
-          esperandoBorrado = false;
-          borrandoParte.inicioBorrado = textoVisible.lastIndexOf(borrandoParte.texto);
+        if (esperando && millis() - tiempoEspera >= 1300) {
+          borrando = true;
+          esperando = false;
         }
 
-        if (borrandoParte && !esperandoBorrado && millis() - tiempoEscritura > velocidadEscritura) {
+        if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
           textoVisible = textoVisible.slice(0, textoVisible.length - 1);
           tiempoEscritura = millis();
-          if (textoVisible.length <= borrandoParte.inicioBorrado) {
-            borrandoParte.borrado = true;
-            borrandoParte = null;
+          if (textoVisible.length <= borrarDesde) {
+            borrando = false;
           }
         }
 
-        if (indexLetra >= textoBase.length && !pausaActiva && !mensajeTerminado && !esperandoBorrado && !borrandoParte) {
-          mensajeTerminado = true;
+        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
+          mensajeFinalizado = true;
           setTimeout(() => {
             borrandoFinal = true;
             indexLetra = textoVisible.length;
@@ -229,7 +243,7 @@
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
-          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
+          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
