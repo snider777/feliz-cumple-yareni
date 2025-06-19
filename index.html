@@ -54,12 +54,13 @@
     let velocidadEscritura = 100;
     let borrando = false;
     let borrarDesde = null;
-    let esperandoPausa = false;
     let esperandoBorrado = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
     let mensajeTerminado = false;
-    let pausaPorPuntuacion = false;
+    let pausaActiva = false;
+    let pausaTipo = null;
+    let pausaInicio = 0;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
@@ -196,41 +197,41 @@
       }
 
       if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperandoPausa && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+        if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           let siguiente = textoBase.slice(indexLetra, indexLetra + 3);
           let actual = textoBase[indexLetra];
 
-          if (!esperandoPausa) {
+          if (!pausaActiva) {
             if (siguiente === "...") {
-              esperandoPausa = true;
-              pausaPorPuntuacion = "...";
-              tiempoEspera = millis();
+              pausaActiva = true;
+              pausaTipo = "...";
+              pausaInicio = millis();
               return;
             } else if (actual === ",") {
-              esperandoPausa = true;
-              pausaPorPuntuacion = ",";
-              tiempoEspera = millis();
+              pausaActiva = true;
+              pausaTipo = ",";
+              pausaInicio = millis();
               return;
             }
           }
 
-          if (esperandoPausa && millis() - tiempoEspera >= 500) {
-            esperandoPausa = false;
-            if (pausaPorPuntuacion === "...") {
-              indexLetra += 3;
-            } else if (pausaPorPuntuacion === ",") {
-              indexLetra++;
+          if (pausaActiva) {
+            if (millis() - pausaInicio >= 500) {
+              pausaActiva = false;
+              if (pausaTipo === "...") {
+                indexLetra += 3;
+              } else if (pausaTipo === ",") {
+                indexLetra++;
+              }
+              pausaTipo = null;
+              tiempoEscritura = millis();
             }
-            pausaPorPuntuacion = false;
-            tiempoEscritura = millis();
             return;
           }
 
-          if (!esperandoPausa) {
-            textoVisible += actual;
-            indexLetra++;
-            tiempoEscritura = millis();
-          }
+          textoVisible += actual;
+          indexLetra++;
+          tiempoEscritura = millis();
         }
 
         for (let parte of partesABorrar) {
@@ -256,8 +257,8 @@
           }
         }
 
-        if (!borrando && indexLetra >= textoBase.length && !esperandoPausa && !esperandoBorrado && !mensajeFinalizado) {
-          mensajeFinalizado = true;
+        if (!borrando && indexLetra >= textoBase.length && !pausaActiva && !esperandoBorrado && !mensajeTerminado) {
+          mensajeTerminado = true;
           setTimeout(() => {
             borrandoFinal = true;
             indexLetra = textoVisible.length;
