@@ -195,30 +195,40 @@
       }
 
       if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+        if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           let siguiente = textoBase.slice(indexLetra, indexLetra + 3);
+          let actual = textoBase[indexLetra];
 
-          if ((siguiente === "..." || textoBase[indexLetra] === ",") && !pausaPorPuntuacion) {
-            esperando = true;
-            pausaPorPuntuacion = true;
-            tiempoEspera = millis();
-            return;
+          if (!esperando) {
+            if (siguiente === "...") {
+              esperando = true;
+              pausaPorPuntuacion = "...";
+              tiempoEspera = millis();
+              return;
+            } else if (actual === ",") {
+              esperando = true;
+              pausaPorPuntuacion = ",";
+              tiempoEspera = millis();
+              return;
+            }
           }
 
           if (esperando && millis() - tiempoEspera >= 500) {
             esperando = false;
+            if (pausaPorPuntuacion === "...") {
+              indexLetra += 3; // Saltar los puntos
+            } else if (pausaPorPuntuacion === ",") {
+              indexLetra++; // Saltar la coma
+            }
+            pausaPorPuntuacion = false;
+            tiempoEscritura = millis();
+            return;
           }
 
           if (!esperando) {
-            if (siguiente === "...") {
-              textoVisible += "...";
-              indexLetra += 3;
-            } else {
-              textoVisible += textoBase[indexLetra];
-              indexLetra++;
-            }
+            textoVisible += actual;
+            indexLetra++;
             tiempoEscritura = millis();
-            pausaPorPuntuacion = false;
           }
         }
 
