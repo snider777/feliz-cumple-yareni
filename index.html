@@ -54,7 +54,8 @@
     let velocidadEscritura = 100;
     let borrando = false;
     let borrarDesde = null;
-    let esperando = false;
+    let esperandoPausa = false;
+    let esperandoBorrado = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
     let mensajeTerminado = false;
@@ -195,37 +196,37 @@
       }
 
       if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+        if (!borrando && !esperandoPausa && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           let siguiente = textoBase.slice(indexLetra, indexLetra + 3);
           let actual = textoBase[indexLetra];
 
-          if (!esperando) {
+          if (!esperandoPausa) {
             if (siguiente === "...") {
-              esperando = true;
+              esperandoPausa = true;
               pausaPorPuntuacion = "...";
               tiempoEspera = millis();
               return;
             } else if (actual === ",") {
-              esperando = true;
+              esperandoPausa = true;
               pausaPorPuntuacion = ",";
               tiempoEspera = millis();
               return;
             }
           }
 
-          if (esperando && millis() - tiempoEspera >= 500) {
-            esperando = false;
+          if (esperandoPausa && millis() - tiempoEspera >= 500) {
+            esperandoPausa = false;
             if (pausaPorPuntuacion === "...") {
-              indexLetra += 3; // Saltar los puntos
+              indexLetra += 3;
             } else if (pausaPorPuntuacion === ",") {
-              indexLetra++; // Saltar la coma
+              indexLetra++;
             }
             pausaPorPuntuacion = false;
             tiempoEscritura = millis();
             return;
           }
 
-          if (!esperando) {
+          if (!esperandoPausa) {
             textoVisible += actual;
             indexLetra++;
             tiempoEscritura = millis();
@@ -235,16 +236,16 @@
         for (let parte of partesABorrar) {
           if (!parte.borrado && textoVisible.includes(parte.texto)) {
             borrarDesde = textoVisible.lastIndexOf(parte.texto);
-            esperando = true;
+            esperandoBorrado = true;
             tiempoEspera = millis();
             parte.borrado = true;
             break;
           }
         }
 
-        if (esperando && millis() - tiempoEspera >= 1300 && !borrando && !pausaPorPuntuacion) {
+        if (esperandoBorrado && millis() - tiempoEspera >= 1300 && !borrando) {
           borrando = true;
-          esperando = false;
+          esperandoBorrado = false;
         }
 
         if (borrando && millis() - tiempoEscritura > velocidadEscritura) {
@@ -255,7 +256,7 @@
           }
         }
 
-        if (!borrando && indexLetra >= textoBase.length && !esperando && !mensajeFinalizado) {
+        if (!borrando && indexLetra >= textoBase.length && !esperandoPausa && !esperandoBorrado && !mensajeFinalizado) {
           mensajeFinalizado = true;
           setTimeout(() => {
             borrandoFinal = true;
