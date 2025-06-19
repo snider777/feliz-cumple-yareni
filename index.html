@@ -47,7 +47,7 @@
     let mensajeFinalizado = false;
     let musicaIniciada = false;
 
-    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastabte bien :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Espero de corazón la pases muy bien en este maravilloso día que debe de ser muy especial para ti y tu familia ... Sin más que decir se depide tu amigo Caleb :D";
+    let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastante bien :) ... Se te quiere, Se te extraña ,... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Pero en fin, yo me despido y espero la pases bien en este día que es tan especial para ti :D, tu amigo Caleb ;)...";
     let textoVisible = "";
     let indexLetra = 0;
     let tiempoEscritura = 0;
@@ -57,7 +57,6 @@
     let esperando = false;
     let tiempoEspera = 0;
     let borrandoFinal = false;
-    let mensajeTerminado = false;
     let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
@@ -80,8 +79,7 @@
 
     function mousePressed() {
       if (!musicaIniciada) {
-        let audio = document.getElementById("bgMusic");
-        audio.play();
+        document.getElementById("bgMusic").play();
         musicaIniciada = true;
       }
 
@@ -89,10 +87,9 @@
         clickCount++;
         if (clickCount % 2 === 0) {
           fraseIndex = (fraseIndex + 1) % frases.length;
-          for (let g of gotas) {
-            g.texto = frases[fraseIndex];
-          }
+          for (let g of gotas) g.texto = frases[fraseIndex];
         }
+
         if (clickCount >= 30) {
           mostrarDedicatoria = true;
           document.getElementById("scrollContainer").style.pointerEvents = "auto";
@@ -133,10 +130,8 @@
       for (let p of particulas) {
         p.x += p.dx;
         p.y += p.dy;
-
         if (p.x < 0 || p.x > width) p.dx *= -1;
         if (p.y < 0 || p.y > height) p.dy *= -1;
-
         fill(p.color + hex(p.alpha, 2));
         noStroke();
         ellipse(p.x, p.y, p.size);
@@ -145,10 +140,7 @@
 
     function draw() {
       background(0, 100);
-
-      if (mostrarDedicatoria) {
-        moverYdibujarParticulas();
-      }
+      if (mostrarDedicatoria) moverYdibujarParticulas();
 
       fill(255);
       textSize(20);
@@ -162,39 +154,24 @@
           let x = random(width);
           let y = -30;
           let speed = random(2, 4);
-          gotas.push({
-            x: x,
-            y: y,
-            speed: speed,
-            alpha: 255,
-            texto: frases[fraseIndex],
-            explosion: false
-          });
+          gotas.push({ x, y, speed, alpha: 255, texto: frases[fraseIndex], explosion: false });
         }
-
         for (let i = gotas.length - 1; i >= 0; i--) {
           let g = gotas[i];
           let color = random(coloresTexto);
           fill(color + hex(g.alpha, 2));
           text(g.texto, g.x, g.y);
-
           if (g.explosion) {
-            g.x += g.dx;
-            g.y += g.dy;
-            g.alpha -= 5;
+            g.x += g.dx; g.y += g.dy; g.alpha -= 5;
           } else {
-            g.y += g.speed;
-            g.alpha -= 1.5;
+            g.y += g.speed; g.alpha -= 1.5;
           }
-
-          if (g.alpha <= 0 || g.y > height + 50) {
-            gotas.splice(i, 1);
-          }
+          if (g.alpha <= 0 || g.y > height + 50) gotas.splice(i, 1);
         }
       }
 
       if (mostrarDedicatoria && !borrandoFinal) {
-        if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
+        if (!borrando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
           indexLetra++;
           tiempoEscritura = millis();
@@ -235,7 +212,10 @@
           textoVisible = textoVisible.substring(1);
           tiempoEscritura = millis();
         }
+      }
 
+      // Este bloque asegura que el texto siga animándose con colores siempre
+      if (mostrarDedicatoria) {
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
