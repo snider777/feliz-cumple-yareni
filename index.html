@@ -47,8 +47,8 @@
     let mensajeFinalizado = false;
     let musicaIniciada = false;
 
-    let textoVisible = "";
     let textoBase = "Hola Yareni ;) ... Que tal, espero que estés bien ... Hace unos meses que no nos vemos pero en fin, sé que no nos conocemos muy bien que digamos y solo hablamos un par de veces pero en ese poco tiempo me agradaste bastante de verdad ... Y bueno jajaja ... Espero te esté yendo bastabte bien :) ... Se te quiere Se te extraña ... Jajaja ... Bueno la verdad sí se te extraña, ojalá poder reencontrarnos muy pronto ... Espero de corazón la pases muy bien en este maravilloso día que debe de ser muy especial para ti y tu familia ... Sin más que decir se depide tu amigo Caleb :D";
+    let textoVisible = "";
     let indexLetra = 0;
     let tiempoEscritura = 0;
     let velocidadEscritura = 100;
@@ -58,7 +58,7 @@
     let tiempoEspera = 0;
     let borrandoFinal = false;
     let mensajeTerminado = false;
-    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"]; // Rosa, fucsia, violeta
+    let coloresTexto = ["#ff8080", "#ff4da6", "#ff00ff"];
 
     let partesABorrar = [
       { texto: "Se te quiere", borrado: false },
@@ -146,18 +146,15 @@
     function draw() {
       background(0, 100);
 
-      // Fondo de partículas si estamos en dedicatoria
       if (mostrarDedicatoria) {
         moverYdibujarParticulas();
       }
 
-      // Contador de clics
       fill(255);
       textSize(20);
       textAlign(LEFT, TOP);
       text("Clics: " + clickCount, 20, 20);
 
-      // Lluvia de frases
       if (!mostrarDedicatoria) {
         textAlign(CENTER, CENTER);
         textSize(24);
@@ -196,7 +193,6 @@
         }
       }
 
-      // Dedicatoria con máquina de escribir y borrado
       if (mostrarDedicatoria && !borrandoFinal) {
         if (!borrando && !esperando && millis() - tiempoEscritura > velocidadEscritura && indexLetra < textoBase.length) {
           textoVisible += textoBase[indexLetra];
@@ -243,7 +239,7 @@
         let dedicatoriaHTML = "";
         for (let c of textoVisible) {
           let color = random(coloresTexto);
-          dedicatoriaHTML += <span style="color:${color}">${c}</span>;
+          dedicatoriaHTML += `<span style="color:${color}">${c}</span>`;
         }
         document.getElementById("dedicatoria").innerHTML = dedicatoriaHTML;
       }
